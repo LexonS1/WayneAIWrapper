@@ -1,0 +1,96 @@
+Wayne Connection Model (Mobile App)
+Where Things Run
+
+relay-api → runs in the cloud (Render)
+
+worker (Wayne) → runs on your local machine (laptop / later Pi)
+
+mobile app → never connects directly to the worker
+
+All communication flows through the relay-api.
+
+What “Connected” Means
+
+The app tracks two independent states:
+
+Relay Online
+
+Cloud server reachable
+
+Checked via GET /health
+
+Wayne Online (Worker Presence)
+
+Local machine is running and polling
+
+Checked via heartbeat timestamps
+
+The app can show:
+
+“Server offline”
+
+“Wayne offline (start laptop)”
+
+“Connected”
+
+Required Relay Endpoints
+Health Check
+GET /health
+→ { ok: true }
+
+
+Used to confirm the relay is reachable.
+
+Worker Presence (Heartbeat)
+
+Worker → Relay
+
+POST /presence/heartbeat
+{ userId, device }
+
+
+Relay stores lastSeenAt.
+
+App → Relay
+
+GET /presence?userId=default
+→ { online: true, lastSeenAt }
+
+
+online = now - lastSeenAt < threshold (e.g. 30s)
+
+App “Loading Until Connected” Flow
+
+Call GET /health
+
+If fail → “Cannot reach server”
+
+Call GET /presence
+
+If offline → “Wayne is offline”
+
+If online → show chat UI
+
+Presence can be polled every 5–10 seconds.
+
+How Messages Flow
+
+App → POST /jobs
+
+Worker polls relay
+
+Worker runs Ollama locally
+
+Worker → POST /jobs/:id/complete
+
+App polls GET /jobs/:id → shows reply
+
+Key Design Points
+
+App never needs to know where the worker is
+
+Worker only makes outbound requests
+
+No NAT, no port forwarding
+
+Laptop can be turned on/off freely

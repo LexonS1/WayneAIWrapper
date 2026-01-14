@@ -51,8 +51,16 @@ async function readText(p: string) {
 }
 
 async function appendConversation(userText: string, reply: string) {
-  const file = path.join(CONV_DIR, `${todayStamp()}.md`);
-  const stamp = new Date().toISOString();
+  const d = new Date();
+  const yyyy = String(d.getFullYear());
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+
+  const stamp = d.toISOString();
+  const dir = path.join(CONV_DIR, yyyy, mm);
+  await fs.mkdir(dir, { recursive: true });
+
+  const file = path.join(dir, `${yyyy}-${mm}-${dd}.md`);
   const block = `\n[${stamp}] USER: ${userText}\n[${stamp}] WAYNE: ${reply}\n`;
   await fs.appendFile(file, block, "utf8");
 }

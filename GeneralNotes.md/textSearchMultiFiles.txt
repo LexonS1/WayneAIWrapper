@@ -1,0 +1,105 @@
+ripgrep (rg) Search — Wayne Notes
+What rg Is
+
+A fast, local text search tool
+
+Searches file contents by keyword/regex
+
+Works across folders instantly
+
+No indexing required
+
+Why Use rg for Wayne
+
+Extremely fast (thousands of files)
+
+Simple command interface
+
+Accurate keyword matches
+
+Ideal for searching conversation logs
+
+What It Searches
+
+Files under:
+memory/conversation/YYYY/MM/*.md
+
+Searches actual text Wayne logged
+
+No model involvement
+
+Basic Command
+rg -n -i "dentist" memory/conversation
+
+
+Flags
+
+-n → show line numbers
+
+-i → case-insensitive
+
+Example Output
+memory/conversation/2026/01/2026-01-10.md:121:USER: Dentist appointment is next week
+
+
+Wayne parses:
+
+file path
+
+date
+
+line number
+
+matched text
+
+How Wayne Uses Results
+
+Run rg with query
+
+Parse stdout lines
+
+Group by file/date
+
+Take top N recent matches
+
+Inject snippets into LLM context or return directly to user
+
+When Wayne Triggers rg
+
+Explicit command:
+search memory: dentist
+
+Implicit recall:
+“What did we say about the dentist?”
+
+Safety & Limits (Must Enforce)
+
+Search only within memory/conversation
+
+Max results (e.g. 5–10)
+
+Max total characters returned (e.g. ≤ 10k)
+
+Prefer newest matches first
+
+Advantages vs Pure TS Search
+
+Much faster on large histories
+
+Simpler code
+
+Scales well to years of logs
+
+Downsides
+
+External dependency (rg must be installed)
+
+Keyword-based only (no semantic meaning)
+
+Installation (Windows)
+winget install BurntSushi.ripgrep.MSVC
+
+
+Verify:
+
+rg --version

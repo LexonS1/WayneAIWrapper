@@ -1,0 +1,121 @@
+Wayne: Hybrid Agent Design (Concise Spec)
+Core Principle
+
+Deterministic actions → Wayne executes directly
+
+Ambiguous or reasoning tasks → LLM interprets
+
+LLM never writes memory or executes actions
+
+Wayne controls memory, state, and execution
+
+What Wayne Does Without the LLM
+
+Wayne should handle these on its own:
+
+1) Command Routing (Fast Path)
+
+Directly parse and execute:
+
+add/remove/list/clear task
+
+remember/save note (explicit only)
+
+show profile
+
+help
+
+This works even if the LLM is unavailable.
+
+2) Memory Management
+
+Wayne is responsible for:
+
+Reading/writing memory files
+
+Daily reset of daily_tasks
+
+Conversation logging (year/month/day folders)
+
+Protecting personal_data from accidental edits
+
+3) Safety & Permissions
+
+Wayne enforces:
+
+Allowlisted actions only
+
+Confirmation before long-term memory writes
+
+File size and context limits
+
+No secrets storage
+
+Dynamic Memory Selection (Wayne-Controlled)
+Always Included
+
+personal_data.md
+
+important.md (curated long-term memory)
+
+daily_tasks.md
+
+Conditionally Included
+
+Recent conversations (today + yesterday)
+
+notes.md (only when relevant)
+
+Older conversations (only on explicit reference)
+
+Simple Relevance Rules (v1)
+
+Wayne selects memory based on keywords:
+
+User Mentions	Include
+tasks / today / schedule	daily_tasks + recent convo
+remember / note / save	notes + important
+profile facts	personal_data
+yesterday / last week	recent convo (expanded)
+plan / project / idea	notes
+Context Limits
+
+Total injected memory ≤ ~25k characters
+
+Truncate from newest → oldest
+
+Never include entire history
+
+LLM’s Role (Constrained)
+
+The LLM is used to:
+
+Interpret fuzzy phrasing
+
+Plan, summarize, rewrite
+
+Suggest memory saves (never execute)
+
+Example output:
+
+SUGGEST_SAVE_IMPORTANT: "User prefers short answers"
+
+
+Wayne asks for confirmation before writing.
+
+Execution Model (Hybrid)
+Step	Owner
+Detect direct commands	Wayne
+Select memory context	Wayne
+Interpret ambiguous intent	LLM
+Execute actions	Wayne
+Persist memory	Wayne
+Future Upgrade Path (No Rewrite)
+
+Replace keyword routing with semantic search (RAG)
+
+Add embeddings over notes/conversations
+
+Add model routing (text vs vision)
+
+Add summarization of old history

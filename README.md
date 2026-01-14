@@ -51,3 +51,8 @@ The worker has a small deterministic handler for quick updates:
 ## Notes
 - Relay storage is in-memory, so restart clears jobs.
 - The worker writes memory files under `apps/worker/memory`.
+
+## Where things run
+- relay-api: runs in the cloud (Render).
+- worker (Wayne): runs on your local machine (laptop / later Pi).
+- mobile app: connects to the relay-api URL with API key.
