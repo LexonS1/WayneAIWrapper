@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+.env.*.local
+**/.env
+**/.env.*.local
+apps/worker/memory/
+*.log
+node_modules
