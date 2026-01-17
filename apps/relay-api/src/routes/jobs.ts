@@ -10,6 +10,10 @@ export function registerJobsRoutes(app: FastifyInstance) {
     const data = `data: ${JSON.stringify(payload)}\n\n`;
     for (const res of streams) {
       res.write(data);
+      const raw = res as any;
+      if (typeof raw.flush === "function") {
+        raw.flush();
+      }
     }
   }
 
@@ -57,10 +61,14 @@ export function registerJobsRoutes(app: FastifyInstance) {
 
     reply.raw.writeHead(200, {
       "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
+      "Cache-Control": "no-cache, no-transform",
       "Connection": "keep-alive",
-      "Access-Control-Allow-Origin": "*"
+      "Access-Control-Allow-Origin": "*",
+      "X-Accel-Buffering": "no"
     });
+    if (typeof reply.raw.flushHeaders === "function") {
+      reply.raw.flushHeaders();
+    }
     reply.hijack();
 
     const streams = jobStreams.get(jobId) ?? new Set();

@@ -22,6 +22,9 @@ let currentPollTimer = null;
 let statusClearTimer = null;
 let currentStream = null;
 let currentStreamText = null;
+let streamBuffer = "";
+let streamFlushHandle = null;
+let streamHasOutput = false;
 
 function autoResizeInput() {
   input.style.height = "auto";
@@ -55,20 +58,46 @@ function closeStream() {
     currentStream.close();
     currentStream = null;
   }
+  streamBuffer = "";
+  if (streamFlushHandle) {
+    cancelAnimationFrame(streamFlushHandle);
+    streamFlushHandle = null;
+  }
 }
 
 function startStream(jobId) {
   closeStream();
   currentStreamText = startStreamedMessage();
+  streamHasOutput = false;
   const streamUrl = `${API_BASE}/jobs/${jobId}/stream?token=${encodeURIComponent(API_KEY)}`;
   currentStream = new EventSource(streamUrl);
+
+  const flushStreamBuffer = () => {
+    if (!currentStreamText || !streamBuffer) {
+      streamFlushHandle = null;
+      return;
+    }
+    currentStreamText.textContent += streamBuffer;
+    streamBuffer = "";
+    chat.scrollTop = chat.scrollHeight;
+    streamFlushHandle = null;
+  };
 
   currentStream.onmessage = (event) => {
     try {
       const data = JSON.parse(event.data);
+      if (data.ready && currentStreamText && !streamHasOutput) {
+        currentStreamText.textContent = "…";
+      }
       if (data.delta && currentStreamText) {
-        currentStreamText.textContent += data.delta;
-        chat.scrollTop = chat.scrollHeight;
+        if (!streamHasOutput) {
+          currentStreamText.textContent = "";
+          streamHasOutput = true;
+        }
+        streamBuffer += data.delta;
+        if (!streamFlushHandle) {
+          streamFlushHandle = requestAnimationFrame(flushStreamBuffer);
+        }
       }
       if (data.cancelled || data.done || data.error) {
         closeStream();

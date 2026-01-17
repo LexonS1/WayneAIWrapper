@@ -51,13 +51,14 @@ export async function ollamaGenerateStream(
   const reader = res.body?.getReader();
   if (!reader) throw new Error("Ollama stream not available");
 
+  const decoder = new TextDecoder();
   let buffer = "";
   let full = "";
 
   while (true) {
     const { value, done } = await reader.read();
     if (done) break;
-    buffer += new TextDecoder().decode(value);
+    buffer += decoder.decode(value);
 
     let idx = buffer.indexOf("\n");
     while (idx >= 0) {

@@ -206,11 +206,26 @@ async function main() {
       const weatherWeek = await readText(paths.WEATHER_WEEK);
 
       const prompt = buildPrompt(userText, personal, daily, notes, weatherDay, weatherWeek);
-      const reply = await ollamaGenerateStream(prompt, (delta) => {
-        relayStreamChunk(id, delta).catch((err: any) => {
+      let pendingStream = "";
+      let lastFlushAt = Date.now();
+      const flushIntervalMs = 60;
+      const flushStream = (force = false) => {
+        if (!pendingStream) return;
+        const ageMs = Date.now() - lastFlushAt;
+        if (!force && ageMs < flushIntervalMs && pendingStream.length < 32) return;
+        const chunk = pendingStream;
+        pendingStream = "";
+        lastFlushAt = Date.now();
+        relayStreamChunk(id, chunk).catch((err: any) => {
           console.warn("Relay chunk failed:", err?.message ?? err);
         });
+      };
+
+      const reply = await ollamaGenerateStream(prompt, (delta) => {
+        pendingStream += delta;
+        flushStream(false);
       });
+      flushStream(true);
 
       await relayComplete(id, reply);
       await appendConversation(userText, reply);
