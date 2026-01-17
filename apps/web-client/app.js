@@ -7,6 +7,7 @@ const sendBtn = document.getElementById("send");
 const cancelBtn = document.getElementById("cancel");
 const status = document.getElementById("status");
 const tasksEl = document.getElementById("tasks");
+const personalEl = document.getElementById("personal");
 const workerDot = document.getElementById("worker-dot");
 const relayDot = document.getElementById("relay-dot");
 const webDot = document.getElementById("web-dot");
@@ -16,6 +17,7 @@ const webStatus = document.getElementById("web-status");
 const MAX_INPUT_HEIGHT = 160;
 let currentJobId = null;
 let currentPollTimer = null;
+let statusClearTimer = null;
 
 function autoResizeInput() {
   input.style.height = "auto";
@@ -67,6 +69,42 @@ async function fetchTasks() {
     renderTasks(data?.tasks ?? []);
   } catch {
     // Ignore task fetch errors.
+  }
+}
+
+function renderPersonal(items) {
+  if (!personalEl) return;
+  personalEl.innerHTML = "";
+
+  if (!Array.isArray(items) || items.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "item";
+    empty.textContent = "No personal data yet.";
+    personalEl.appendChild(empty);
+    return;
+  }
+
+  items.forEach(({ key, value }) => {
+    const item = document.createElement("div");
+    item.className = "item";
+    item.textContent = `${key}: ${value}`;
+    personalEl.appendChild(item);
+  });
+}
+
+async function fetchPersonal() {
+  if (!personalEl) return;
+  try {
+    const res = await fetch(`${API_BASE}/personal?userId=default`, {
+      headers: {
+        "Authorization": `Bearer ${API_KEY}`
+      }
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    renderPersonal(data?.items ?? []);
+  } catch {
+    // Ignore personal fetch errors.
   }
 }
 
@@ -213,6 +251,10 @@ async function pollJob(jobId) {
       clearInterval(currentPollTimer);
       currentPollTimer = null;
       status.textContent = "Cancelled.";
+      if (statusClearTimer) clearTimeout(statusClearTimer);
+      statusClearTimer = setTimeout(() => {
+        status.textContent = "";
+      }, 3000);
       currentJobId = null;
       cancelBtn.disabled = true;
     }
@@ -240,6 +282,10 @@ async function cancelMessage() {
     currentPollTimer = null;
   }
   status.textContent = "Cancelled.";
+  if (statusClearTimer) clearTimeout(statusClearTimer);
+  statusClearTimer = setTimeout(() => {
+    status.textContent = "";
+  }, 3000);
   currentJobId = null;
 }
 
@@ -257,5 +303,8 @@ autoResizeInput();
 renderTasks([]);
 fetchTasks();
 setInterval(fetchTasks, 2000);
+renderPersonal([]);
+fetchPersonal();
+setInterval(fetchPersonal, 2000);
 fetchStatus();
 setInterval(fetchStatus, 2000);

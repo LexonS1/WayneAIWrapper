@@ -48,6 +48,7 @@ app.addHook("preHandler", async (req, reply) => {
 // --- In-memory job store (good for sanity check)
 const jobs = new Map<string, Job>();
 const tasksByUser = new Map<string, string[]>();
+const personalByUser = new Map<string, Array<{ key: string; value: string }>>();
 const workerHeartbeatByUser = new Map<string, string>();
 
 app.get("/", async () => ({ ok: true, service: "wayne-relay-api" }));
@@ -66,6 +67,13 @@ app.get("/tasks", async (req) => {
   const userId = String(q?.userId ?? "default");
   const tasks = tasksByUser.get(userId) ?? [];
   return { tasks };
+});
+
+app.get("/personal", async (req) => {
+  const q = req.query as any;
+  const userId = String(q?.userId ?? "default");
+  const items = personalByUser.get(userId) ?? [];
+  return { items };
 });
 
 // Create a job
@@ -100,6 +108,23 @@ app.post("/tasks", async (req, reply) => {
     .filter(Boolean);
 
   tasksByUser.set(userId, clean);
+  return { ok: true, count: clean.length };
+});
+
+app.post("/personal", async (req, reply) => {
+  const body = req.body as any;
+  const userId = String(body?.userId ?? "default");
+  const items = Array.isArray(body?.items) ? body.items : null;
+  if (!items) return reply.code(400).send({ error: "items is required" });
+
+  const clean = items
+    .map((item: any) => ({
+      key: String(item?.key ?? "").trim(),
+      value: String(item?.value ?? "").trim()
+    }))
+    .filter(item => item.key && item.value);
+
+  personalByUser.set(userId, clean);
   return { ok: true, count: clean.length };
 });
 

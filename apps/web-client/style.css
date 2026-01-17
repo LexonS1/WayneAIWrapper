@@ -89,6 +89,65 @@ h1::after {
   gap: 18px;
 }
 
+#personal-panel {
+  width: 240px;
+  flex: 0 0 240px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: linear-gradient(180deg, var(--panel), #121723);
+  padding: 12px;
+  height: 420px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 12px 30px var(--shadow);
+}
+
+#personal-panel h2 {
+  font-family: var(--title);
+  font-size: 14px;
+  margin: 0 0 10px 0;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+#personal {
+  overflow-y: auto;
+  padding-right: 4px;
+  max-height: 375px;
+  scrollbar-width: thin;
+  scrollbar-color: #2a2f3a #0f1116;
+}
+
+#personal .item {
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--text);
+}
+
+#personal .item:last-child {
+  border-bottom: none;
+}
+
+#personal::-webkit-scrollbar {
+  width: 10px;
+}
+
+#personal::-webkit-scrollbar-track {
+  background: #0f1116;
+  border-radius: 8px;
+}
+
+#personal::-webkit-scrollbar-thumb {
+  background: #2a2f3a;
+  border-radius: 8px;
+  border: 2px solid #0f1116;
+}
+
+#personal::-webkit-scrollbar-thumb:hover {
+  background: #384152;
+}
+
 #chat-panel {
   flex: 1;
   min-width: 0;
@@ -340,6 +399,12 @@ h1::after {
 @media (max-width: 820px) {
   #main {
     flex-direction: column;
+  }
+
+  #personal-panel {
+    width: auto;
+    flex: none;
+    height: auto;
   }
 
   #tasks-panel {

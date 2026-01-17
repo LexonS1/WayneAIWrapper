@@ -3,9 +3,10 @@ import "dotenv/config";
 import { config, paths } from "./config/index.js";
 import { ensureFiles, resetDailyIfNeeded, readText } from "./memory/index.js";
 import { handleDailyTasksCommand, maybeHandleTaskCommand, readTasksList } from "./tasks/index.js";
+import { readPersonalItems } from "./personal/index.js";
 import { appendConversation } from "./conversation/index.js";
 import { ollamaGenerate } from "./llm/ollama.js";
-import { relayFetchNext, relayComplete, relayError, relayUpdateTasks, relayHeartbeat } from "./relay/index.js";
+import { relayFetchNext, relayComplete, relayError, relayUpdateTasks, relayHeartbeat, relayUpdatePersonal } from "./relay/index.js";
 import { getNowStamp, maybeHandleTimeQuery } from "./utils/time.js";
 
 function buildPrompt(userText: string, personal: string, daily: string, notes: string) {
@@ -43,6 +44,12 @@ async function main() {
     await relayUpdateTasks(await readTasksList());
   } catch (err: any) {
     console.warn("Initial tasks sync failed:", err?.message ?? err);
+  }
+
+  try {
+    await relayUpdatePersonal(await readPersonalItems());
+  } catch (err: any) {
+    console.warn("Initial personal sync failed:", err?.message ?? err);
   }
 
   try {
@@ -84,6 +91,7 @@ async function main() {
         await relayComplete(id, dailyTasksReply);
         await appendConversation(userText, dailyTasksReply);
         await relayUpdateTasks(await readTasksList());
+        await relayUpdatePersonal(await readPersonalItems());
         continue;
       }
 
@@ -92,6 +100,7 @@ async function main() {
         await relayComplete(id, taskReply);
         await appendConversation(userText, taskReply);
         await relayUpdateTasks(await readTasksList());
+        await relayUpdatePersonal(await readPersonalItems());
         continue;
       }
 
@@ -111,6 +120,11 @@ async function main() {
 
       await relayComplete(id, reply);
       await appendConversation(userText, reply);
+      try {
+        await relayUpdatePersonal(await readPersonalItems());
+      } catch (err: any) {
+        console.warn("Personal sync failed:", err?.message ?? err);
+      }
     } catch (err: any) {
       console.error("Worker loop error:", err?.message ?? err);
       await new Promise(r => setTimeout(r, config.POLL_MS));
