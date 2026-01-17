@@ -6,11 +6,19 @@ export async function ensureFiles() {
   await fs.mkdir(paths.MEM_ROOT, { recursive: true });
   await fs.mkdir(paths.CONV_DIR, { recursive: true });
 
-  for (const p of [paths.PERSONAL, paths.DAILY, paths.NOTES, paths.RESET_META]) {
+  for (const p of [
+    paths.PERSONAL,
+    paths.DAILY,
+    paths.NOTES,
+    paths.WEATHER_DAY,
+    paths.WEATHER_WEEK,
+    paths.WEATHER_META,
+    paths.RESET_META
+  ]) {
     try {
       await fs.access(p);
     } catch {
-      await fs.writeFile(p, "", "utf8");
+      await fs.writeFile(p, p.endsWith(".json") ? "{}" : "", "utf8");
     }
   }
 }

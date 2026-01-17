@@ -17,6 +17,9 @@ export const paths = {
   PERSONAL: path.join(MEM_ROOT, "personal_data.md"),
   DAILY: path.join(MEM_ROOT, "daily_tasks.md"),
   NOTES: path.join(MEM_ROOT, "notes.md"),
+  WEATHER_DAY: path.join(MEM_ROOT, "weather_day.md"),
+  WEATHER_WEEK: path.join(MEM_ROOT, "weather_week.md"),
+  WEATHER_META: path.join(MEM_ROOT, "weather_meta.json"),
   CONV_DIR: path.join(MEM_ROOT, "conversation"),
   RESET_META: path.join(MEM_ROOT, "meta_daily_reset.txt")
 };

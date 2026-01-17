@@ -378,6 +378,18 @@ h1::after {
   gap: 8px;
 }
 
+.status-weather {
+  margin-left: auto;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.status-time {
+  margin-left: 16px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
 .dot {
   width: 8px;
   height: 8px;

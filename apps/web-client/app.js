@@ -14,6 +14,8 @@ const webDot = document.getElementById("web-dot");
 const workerStatus = document.getElementById("worker-status");
 const relayStatus = document.getElementById("relay-status");
 const webStatus = document.getElementById("web-status");
+const statusWeather = document.getElementById("status-weather");
+const statusTime = document.getElementById("status-time");
 const MAX_INPUT_HEIGHT = 160;
 let currentJobId = null;
 let currentPollTimer = null;
@@ -161,6 +163,43 @@ async function fetchStatus() {
   } catch {
     setStatus(relayDot, relayStatus, false, "offline");
     setWorkerStatus("offline");
+  }
+}
+
+function updateClock() {
+  if (!statusTime) return;
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, "0");
+  const mm = String(now.getMinutes()).padStart(2, "0");
+  const ss = String(now.getSeconds()).padStart(2, "0");
+  statusTime.textContent = `${hh}:${mm}:${ss}`;
+}
+
+function titleCase(text) {
+  if (!text) return "";
+  return text.charAt(0).toUpperCase() + text.slice(1);
+}
+
+async function fetchWeatherStatus() {
+  if (!statusWeather) return;
+  try {
+    const res = await fetch(`${API_BASE}/weather?userId=default`, {
+      headers: {
+        "Authorization": `Bearer ${API_KEY}`
+      }
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    const summary = data?.summary ?? {};
+    const temp = summary.currentTempF;
+    const condition = titleCase(summary.currentCondition ?? "");
+    if (Number.isFinite(Number(temp))) {
+      statusWeather.textContent = `Weather: ${Math.round(Number(temp))}F ${condition}`;
+    } else {
+      statusWeather.textContent = "Weather: --";
+    }
+  } catch {
+    statusWeather.textContent = "Weather: --";
   }
 }
 
@@ -331,3 +370,7 @@ fetchPersonal();
 setInterval(fetchPersonal, 2000);
 fetchStatus();
 setInterval(fetchStatus, 2000);
+updateClock();
+setInterval(updateClock, 1000);
+fetchWeatherStatus();
+setInterval(fetchWeatherStatus, 30 * 60 * 1000);

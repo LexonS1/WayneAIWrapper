@@ -74,3 +74,21 @@ export async function relayUpdatePersonal(items: Array<{ key: string; value: str
 
   if (!res.ok) throw new Error(`Relay personal error ${res.status}: ${await res.text()}`);
 }
+
+export async function relayUpdateWeather(summary: {
+  currentTempF?: number;
+  currentFeelsF?: number;
+  currentCondition?: string;
+  updatedAt?: number;
+}) {
+  const res = await fetch(`${config.RELAY_API_URL}/weather`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${config.RELAY_API_KEY}`
+    },
+    body: JSON.stringify({ userId: config.USER_ID, summary })
+  });
+
+  if (!res.ok) throw new Error(`Relay weather error ${res.status}: ${await res.text()}`);
+}

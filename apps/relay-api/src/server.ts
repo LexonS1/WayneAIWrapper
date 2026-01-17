@@ -7,6 +7,7 @@ import { registerJobsRoutes } from "./routes/jobs";
 import { registerTasksRoutes } from "./routes/tasks";
 import { registerPersonalRoutes } from "./routes/personal";
 import { registerWorkerRoutes } from "./routes/worker";
+import { registerWeatherRoutes } from "./routes/weather";
 
 export async function startServer() {
   const app = Fastify({ logger: true });
@@ -17,6 +18,7 @@ export async function startServer() {
   registerJobsRoutes(app);
   registerTasksRoutes(app);
   registerPersonalRoutes(app);
+  registerWeatherRoutes(app);
   registerWorkerRoutes(app);
 
   await app.listen({ port: config.PORT, host: "0.0.0.0" });

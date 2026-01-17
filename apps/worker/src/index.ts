@@ -4,12 +4,20 @@ import { config, paths } from "./config/index.js";
 import { ensureFiles, resetDailyIfNeeded, readText } from "./memory/index.js";
 import { handleDailyTasksCommand, maybeHandleTaskCommand, readTasksList } from "./tasks/index.js";
 import { readPersonalItems } from "./personal/index.js";
+import { readWeatherSummary, refreshWeather, shouldRefreshForQuery } from "./weather/index.js";
 import { appendConversation } from "./conversation/index.js";
 import { ollamaGenerate } from "./llm/ollama.js";
-import { relayFetchNext, relayComplete, relayError, relayUpdateTasks, relayHeartbeat, relayUpdatePersonal } from "./relay/index.js";
+import { relayFetchNext, relayComplete, relayError, relayUpdateTasks, relayHeartbeat, relayUpdatePersonal, relayUpdateWeather } from "./relay/index.js";
 import { getNowStamp, maybeHandleTimeQuery } from "./utils/time.js";
 
-function buildPrompt(userText: string, personal: string, daily: string, notes: string) {
+function buildPrompt(
+  userText: string,
+  personal: string,
+  daily: string,
+  notes: string,
+  weatherDay: string,
+  weatherWeek: string
+) {
   return `
 You are Wayne, a local personal assistant.
 Tone: concise, direct, practical.
@@ -21,6 +29,12 @@ Rules:
 
 [now]
 ${getNowStamp()}
+
+[weather_today]
+${weatherDay || "(empty)"}
+
+[weather_week]
+${weatherWeek || "(empty)"}
 
 [personal_data]
 ${personal || "(empty)"}
@@ -40,6 +54,23 @@ async function main() {
   await ensureFiles();
   console.log(`Worker started. Polling ${config.RELAY_API_URL} as userId="${config.USER_ID}"`);
   console.log(`Ollama: ${config.OLLAMA_URL} model=${config.OLLAMA_MODEL}`);
+  let workerState: "online" | "busy" = "online";
+
+  setInterval(() => {
+    relayHeartbeat(workerState).catch((err: any) => {
+      console.warn("Heartbeat failed:", err?.message ?? err);
+    });
+  }, 3000);
+
+  setInterval(() => {
+    refreshWeather(false)
+      .then(async () => {
+        await relayUpdateWeather(await readWeatherSummary());
+      })
+      .catch((err: any) => {
+        console.warn("Weather refresh failed:", err?.message ?? err);
+      });
+  }, 60 * 60 * 1000);
   try {
     await relayUpdateTasks(await readTasksList());
   } catch (err: any) {
@@ -53,7 +84,18 @@ async function main() {
   }
 
   try {
-    await relayHeartbeat();
+    await refreshWeather(true);
+  } catch (err: any) {
+    console.warn("Initial weather refresh failed:", err?.message ?? err);
+  }
+  try {
+    await relayUpdateWeather(await readWeatherSummary());
+  } catch (err: any) {
+    console.warn("Initial weather sync failed:", err?.message ?? err);
+  }
+
+  try {
+    await relayHeartbeat(workerState);
   } catch (err: any) {
     console.warn("Initial heartbeat failed:", err?.message ?? err);
   }
@@ -63,7 +105,7 @@ async function main() {
       await resetDailyIfNeeded();
 
       try {
-        await relayHeartbeat();
+        await relayHeartbeat(workerState);
       } catch (err: any) {
         console.warn("Heartbeat failed:", err?.message ?? err);
       }
@@ -91,10 +133,20 @@ async function main() {
         continue;
       }
 
+      workerState = "busy";
       try {
-        await relayHeartbeat("busy");
+        await relayHeartbeat(workerState);
       } catch (err: any) {
         console.warn("Busy heartbeat failed:", err?.message ?? err);
+      }
+
+      if (shouldRefreshForQuery(userText)) {
+        try {
+          await refreshWeather(false);
+          await relayUpdateWeather(await readWeatherSummary());
+        } catch (err: any) {
+          console.warn("Weather refresh failed:", err?.message ?? err);
+        }
       }
 
       const dailyTasksReply = await handleDailyTasksCommand(userText);
@@ -103,8 +155,9 @@ async function main() {
         await appendConversation(userText, dailyTasksReply);
         await relayUpdateTasks(await readTasksList());
         await relayUpdatePersonal(await readPersonalItems());
+        workerState = "online";
         try {
-          await relayHeartbeat("online");
+          await relayHeartbeat(workerState);
         } catch (err: any) {
           console.warn("Online heartbeat failed:", err?.message ?? err);
         }
@@ -117,8 +170,9 @@ async function main() {
         await appendConversation(userText, taskReply);
         await relayUpdateTasks(await readTasksList());
         await relayUpdatePersonal(await readPersonalItems());
+        workerState = "online";
         try {
-          await relayHeartbeat("online");
+          await relayHeartbeat(workerState);
         } catch (err: any) {
           console.warn("Online heartbeat failed:", err?.message ?? err);
         }
@@ -135,8 +189,10 @@ async function main() {
       const personal = await readText(paths.PERSONAL);
       const daily = await readText(paths.DAILY);
       const notes = await readText(paths.NOTES);
+      const weatherDay = await readText(paths.WEATHER_DAY);
+      const weatherWeek = await readText(paths.WEATHER_WEEK);
 
-      const prompt = buildPrompt(userText, personal, daily, notes);
+      const prompt = buildPrompt(userText, personal, daily, notes, weatherDay, weatherWeek);
       const reply = await ollamaGenerate(prompt);
 
       await relayComplete(id, reply);
@@ -146,8 +202,9 @@ async function main() {
       } catch (err: any) {
         console.warn("Personal sync failed:", err?.message ?? err);
       }
+      workerState = "online";
       try {
-        await relayHeartbeat("online");
+        await relayHeartbeat(workerState);
       } catch (err: any) {
         console.warn("Online heartbeat failed:", err?.message ?? err);
       }
