@@ -18,6 +18,19 @@ function buildPrompt(
   weatherDay: string,
   weatherWeek: string
 ) {
+  const needsTasks = /\b(tasks?|daily_tasks|todo|to-do|list)\b/i.test(userText);
+  const needsNotes = /\b(notes?|remember|memory)\b/i.test(userText);
+  const needsWeather = shouldRefreshForQuery(userText);
+
+  const notesBlock = needsNotes
+    ? notes
+      ? notes.slice(0, 1000)
+      : "(empty)"
+    : "(omitted)";
+
+  const weatherDayBlock = needsWeather ? weatherDay || "(empty)" : "(omitted)";
+  const weatherWeekBlock = needsWeather ? weatherWeek || "(empty)" : "(omitted)";
+  const dailyBlock = needsTasks ? daily || "(empty)" : "(omitted)";
   return `
 You are Wayne, a local personal assistant.
 Tone: concise, direct, practical.
@@ -31,19 +44,19 @@ Rules:
 ${getNowStamp()}
 
 [weather_today]
-${weatherDay || "(empty)"}
+${weatherDayBlock}
 
 [weather_week]
-${weatherWeek || "(empty)"}
+${weatherWeekBlock}
 
 [personal_data]
 ${personal || "(empty)"}
 
 [daily_tasks]
-${daily || "(empty)"}
+${dailyBlock}
 
 [notes]
-${notes ? notes.slice(0, 2000) : "(empty)"}  (notes truncated)
+${notesBlock}
 
 User: ${userText}
 Wayne:
