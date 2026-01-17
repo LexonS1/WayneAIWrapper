@@ -26,6 +26,7 @@ body {
 #input {
   display: flex;
   gap: 8px;
+  align-items: flex-start;
   position: relative;
   z-index: 10;
   pointer-events: auto;
@@ -35,6 +36,10 @@ body {
   flex: 1;
   padding: 10px;
   font-size: 16px;
+  min-height: 42px;
+  max-height: 160px;
+  resize: none;
+  overflow-y: hidden;
   position: relative;
   z-index: 10;
   pointer-events: auto;
@@ -43,6 +48,27 @@ body {
   border: 1px solid #333;
   border-radius: 6px;
   outline: none;
+  scrollbar-width: thin;
+  scrollbar-color: #333 #141414;
+}
+
+#message::-webkit-scrollbar {
+  width: 10px;
+}
+
+#message::-webkit-scrollbar-track {
+  background: #141414;
+  border-radius: 8px;
+}
+
+#message::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 8px;
+  border: 2px solid #141414;
+}
+
+#message::-webkit-scrollbar-thumb:hover {
+  background: #3f3f3f;
 }
 
 #message:focus {
@@ -52,6 +78,8 @@ body {
 #send {
   padding: 10px 14px;
   font-size: 16px;
+  height: 42px;
+  align-self: flex-start;
   background: #222;
   color: #eee;
   border: 1px solid #333;

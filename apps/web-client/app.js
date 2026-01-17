@@ -5,6 +5,14 @@ const chat = document.getElementById("chat");
 const input = document.getElementById("message");
 const sendBtn = document.getElementById("send");
 const status = document.getElementById("status");
+const MAX_INPUT_HEIGHT = 160;
+
+function autoResizeInput() {
+  input.style.height = "auto";
+  const nextHeight = Math.min(input.scrollHeight, MAX_INPUT_HEIGHT);
+  input.style.height = `${nextHeight}px`;
+  input.style.overflowY = input.scrollHeight > MAX_INPUT_HEIGHT ? "auto" : "hidden";
+}
 
 function addMessage(text, who) {
   const div = document.createElement("div");
@@ -36,6 +44,7 @@ function ensureInputUpdates() {
       if (printable) {
         input.value = before.slice(0, start) + event.key + before.slice(end);
         input.selectionStart = input.selectionEnd = start + 1;
+        autoResizeInput();
         return;
       }
 
@@ -49,6 +58,7 @@ function ensureInputUpdates() {
           input.value = before.slice(0, start - 1) + before.slice(end);
           input.selectionStart = input.selectionEnd = start - 1;
         }
+        autoResizeInput();
         return;
       }
 
@@ -62,6 +72,7 @@ function ensureInputUpdates() {
           input.value = before.slice(0, start) + before.slice(start + 1);
           input.selectionStart = input.selectionEnd = start;
         }
+        autoResizeInput();
       }
     }, 0);
   });
@@ -71,6 +82,7 @@ async function sendMessage() {
   const text = input.value.trim();
   if (!text) return;
   input.value = "";
+  autoResizeInput();
 
   addMessage(text, "user");
   status.textContent = "Sending…";
@@ -111,5 +123,12 @@ async function pollJob(jobId) {
 }
 
 sendBtn.onclick = sendMessage;
-input.onkeydown = e => e.key === "Enter" && sendMessage();
+input.onkeydown = (event) => {
+  if (event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    sendMessage();
+  }
+};
+input.addEventListener("input", autoResizeInput);
 ensureInputUpdates();
+autoResizeInput();
