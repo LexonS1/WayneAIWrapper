@@ -5,7 +5,7 @@ import { ensureFiles, resetDailyIfNeeded, readText } from "./memory/index.js";
 import { handleDailyTasksCommand, maybeHandleTaskCommand, readTasksList } from "./tasks/index.js";
 import { appendConversation } from "./conversation/index.js";
 import { ollamaGenerate } from "./llm/ollama.js";
-import { relayFetchNext, relayComplete, relayError, relayUpdateTasks } from "./relay/index.js";
+import { relayFetchNext, relayComplete, relayError, relayUpdateTasks, relayHeartbeat } from "./relay/index.js";
 import { getNowStamp, maybeHandleTimeQuery } from "./utils/time.js";
 
 function buildPrompt(userText: string, personal: string, daily: string, notes: string) {
@@ -45,9 +45,21 @@ async function main() {
     console.warn("Initial tasks sync failed:", err?.message ?? err);
   }
 
+  try {
+    await relayHeartbeat();
+  } catch (err: any) {
+    console.warn("Initial heartbeat failed:", err?.message ?? err);
+  }
+
   while (true) {
     try {
       await resetDailyIfNeeded();
+
+      try {
+        await relayHeartbeat();
+      } catch (err: any) {
+        console.warn("Heartbeat failed:", err?.message ?? err);
+      }
 
       const next = await relayFetchNext();
       const job = next?.job ?? next;
