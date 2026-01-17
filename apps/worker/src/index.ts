@@ -2,7 +2,7 @@
 import "dotenv/config";
 import { config, paths } from "./config/index.js";
 import { ensureFiles, resetDailyIfNeeded, readText } from "./memory/index.js";
-import { maybeHandleTaskCommand } from "./tasks/index.js";
+import { handleDailyTasksCommand, maybeHandleTaskCommand } from "./tasks/index.js";
 import { appendConversation } from "./conversation/index.js";
 import { ollamaGenerate } from "./llm/ollama.js";
 import { relayFetchNext, relayComplete, relayError } from "./relay/index.js";
@@ -14,6 +14,7 @@ You are Wayne, a local personal assistant.
 Tone: concise, direct, practical.
 Rules:
 - Do not invent personal facts not in personal_data.
+- Output should only contain the answer, no extra bloat.
 - Use daily_tasks when asked about tasks or planning.
 - If user asks to add tasks, you may suggest phrasing but the system handles file updates.
 
@@ -58,6 +59,13 @@ async function main() {
       const userText = String(job.message ?? "").trim();
       if (!userText) {
         await relayError(id, "Empty message");
+        continue;
+      }
+
+      const dailyTasksReply = await handleDailyTasksCommand(userText);
+      if (dailyTasksReply) {
+        await relayComplete(id, dailyTasksReply);
+        await appendConversation(userText, dailyTasksReply);
         continue;
       }
 

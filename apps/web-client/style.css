@@ -111,6 +111,23 @@ body {
   cursor: pointer;
 }
 
+#cancel {
+  padding: 10px 14px;
+  font-size: 16px;
+  height: 42px;
+  align-self: flex-start;
+  background: #1a1a1a;
+  color: #eee;
+  border: 1px solid #333;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 #status {
   margin-top: 8px;
   color: #aaa;

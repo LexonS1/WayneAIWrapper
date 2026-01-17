@@ -21,6 +21,7 @@ export async function relayComplete(id: string, replyText: string) {
     body: JSON.stringify({ reply: replyText })
   });
 
+  if (res.status === 409) return;
   if (!res.ok) throw new Error(`Relay complete error ${res.status}: ${await res.text()}`);
 }
 

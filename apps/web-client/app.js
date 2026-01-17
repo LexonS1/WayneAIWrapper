@@ -4,8 +4,11 @@ const API_KEY = "dev-secret"; // OK for now (personal use)
 const chat = document.getElementById("chat");
 const input = document.getElementById("message");
 const sendBtn = document.getElementById("send");
+const cancelBtn = document.getElementById("cancel");
 const status = document.getElementById("status");
 const MAX_INPUT_HEIGHT = 160;
+let currentJobId = null;
+let currentPollTimer = null;
 
 function autoResizeInput() {
   input.style.height = "auto";
@@ -88,6 +91,7 @@ async function sendMessage() {
 
   addMessage(text, "user");
   status.textContent = "Sending…";
+  cancelBtn.disabled = true;
 
   const res = await fetch(`${API_BASE}/jobs`, {
     method: "POST",
@@ -102,13 +106,16 @@ async function sendMessage() {
   });
 
   const { jobId } = await res.json();
+  currentJobId = jobId;
+  cancelBtn.disabled = false;
   pollJob(jobId);
 }
 
 async function pollJob(jobId) {
   status.textContent = "Wayne is thinking…";
 
-  const timer = setInterval(async () => {
+  if (currentPollTimer) clearInterval(currentPollTimer);
+  currentPollTimer = setInterval(async () => {
     const res = await fetch(`${API_BASE}/jobs/${jobId}`, {
       headers: {
         "Authorization": `Bearer ${API_KEY}`
@@ -117,14 +124,50 @@ async function pollJob(jobId) {
     const job = await res.json();
 
     if (job.status === "done") {
-      clearInterval(timer);
+      clearInterval(currentPollTimer);
+      currentPollTimer = null;
       addMessage(job.reply, "wayne");
       status.textContent = "";
+      currentJobId = null;
+      cancelBtn.disabled = true;
+      return;
+    }
+    if (job.status === "cancelled") {
+      clearInterval(currentPollTimer);
+      currentPollTimer = null;
+      status.textContent = "Cancelled.";
+      currentJobId = null;
+      cancelBtn.disabled = true;
     }
   }, 250);
 }
 
+async function cancelMessage() {
+  if (!currentJobId) return;
+  cancelBtn.disabled = true;
+  status.textContent = "Cancelling…";
+
+  try {
+    await fetch(`${API_BASE}/jobs/${currentJobId}/cancel`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${API_KEY}`
+      }
+    });
+  } catch {
+    // Ignore cancel errors; fall back to status poll.
+  }
+
+  if (currentPollTimer) {
+    clearInterval(currentPollTimer);
+    currentPollTimer = null;
+  }
+  status.textContent = "Cancelled.";
+  currentJobId = null;
+}
+
 sendBtn.onclick = sendMessage;
+cancelBtn.onclick = cancelMessage;
 input.onkeydown = (event) => {
   if (event.key === "Enter" && !event.shiftKey) {
     event.preventDefault();
