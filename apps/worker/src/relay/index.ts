@@ -35,3 +35,16 @@ export async function relayError(id: string, error: string) {
     body: JSON.stringify({ error })
   });
 }
+
+export async function relayUpdateTasks(tasks: string[]) {
+  const res = await fetch(`${config.RELAY_API_URL}/tasks`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${config.RELAY_API_KEY}`
+    },
+    body: JSON.stringify({ userId: config.USER_ID, tasks })
+  });
+
+  if (!res.ok) throw new Error(`Relay tasks error ${res.status}: ${await res.text()}`);
+}

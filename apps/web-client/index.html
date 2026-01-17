@@ -9,15 +9,24 @@
   <div id="app">
     <h1>Wayne</h1>
 
-    <div id="chat"></div>
+    <div id="main">
+      <div id="chat-panel">
+        <div id="chat"></div>
 
-    <div id="input">
-      <textarea id="message" placeholder="Type a message…"></textarea>
-      <button id="send">Send</button>
-      <button id="cancel" disabled>Cancel</button>
+        <div id="input">
+          <textarea id="message" placeholder="Type a message…"></textarea>
+          <button id="send">Send</button>
+          <button id="cancel" disabled>Cancel</button>
+        </div>
+
+        <div id="status"></div>
+      </div>
+
+      <div id="tasks-panel">
+        <h2>Daily Tasks</h2>
+        <div id="tasks"></div>
+      </div>
     </div>
-
-    <div id="status"></div>
   </div>
 
   <script src="app.js"></script>

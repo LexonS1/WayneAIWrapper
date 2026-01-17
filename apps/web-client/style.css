@@ -5,9 +5,19 @@ body {
 }
 
 #app {
-  max-width: 600px;
+  max-width: 900px;
   margin: 40px auto;
   padding: 0 12px;
+}
+
+#main {
+  display: flex;
+  gap: 16px;
+}
+
+#chat-panel {
+  flex: 1;
+  min-width: 0;
 }
 
 #chat {
@@ -19,6 +29,71 @@ body {
   background: #0b0b0b;
   scrollbar-width: thin;
   scrollbar-color: #333 #141414;
+}
+
+#tasks-panel {
+  width: 260px;
+  flex: 0 0 260px;
+  border: 1px solid #333;
+  border-radius: 8px;
+  background: #0b0b0b;
+  padding: 10px;
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+#tasks-panel h2 {
+  font-size: 16px;
+  margin: 0 0 8px 0;
+}
+
+#tasks {
+  overflow-y: auto;
+  padding-right: 4px;
+  max-height: 210px;
+  scrollbar-width: thin;
+  scrollbar-color: #333 #141414;
+}
+
+#tasks .task {
+  padding: 4px 0;
+  border-bottom: 1px solid #1f1f1f;
+}
+
+#tasks .task:last-child {
+  border-bottom: none;
+}
+
+#tasks::-webkit-scrollbar {
+  width: 10px;
+}
+
+#tasks::-webkit-scrollbar-track {
+  background: #141414;
+  border-radius: 8px;
+}
+
+#tasks::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 8px;
+  border: 2px solid #141414;
+}
+
+#tasks::-webkit-scrollbar-thumb:hover {
+  background: #3f3f3f;
+}
+
+@media (max-width: 820px) {
+  #main {
+    flex-direction: column;
+  }
+
+  #tasks-panel {
+    width: auto;
+    flex: none;
+    height: auto;
+  }
 }
 
 #chat::-webkit-scrollbar {

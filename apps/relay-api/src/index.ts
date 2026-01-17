@@ -47,10 +47,18 @@ app.addHook("preHandler", async (req, reply) => {
 
 // --- In-memory job store (good for sanity check)
 const jobs = new Map<string, Job>();
+const tasksByUser = new Map<string, string[]>();
 
 app.get("/", async () => ({ ok: true, service: "wayne-relay-api" }));
 
 app.get("/health", async () => ({ ok: true }));
+
+app.get("/tasks", async (req) => {
+  const q = req.query as any;
+  const userId = String(q?.userId ?? "default");
+  const tasks = tasksByUser.get(userId) ?? [];
+  return { tasks };
+});
 
 // Create a job
 app.post("/jobs", async (req) => {
@@ -71,6 +79,20 @@ app.post("/jobs", async (req) => {
 
   jobs.set(job.id, job);
   return { jobId: job.id };
+});
+
+app.post("/tasks", async (req, reply) => {
+  const body = req.body as any;
+  const userId = String(body?.userId ?? "default");
+  const tasks = Array.isArray(body?.tasks) ? body.tasks : null;
+  if (!tasks) return reply.code(400).send({ error: "tasks is required" });
+
+  const clean = tasks
+    .map((task: any) => String(task ?? "").trim())
+    .filter(Boolean);
+
+  tasksByUser.set(userId, clean);
+  return { ok: true, count: clean.length };
 });
 
 // Get job status

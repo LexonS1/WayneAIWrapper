@@ -128,3 +128,8 @@ export async function maybeHandleTaskCommand(userText: string): Promise<string |
   await writeTasks(tasks);
   return `Added task ${tasks.length}: "${task}".`;
 }
+
+export async function readTasksList(): Promise<string[]> {
+  const current = await readText(paths.DAILY);
+  return parseTasks(current);
+}

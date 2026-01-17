@@ -6,6 +6,7 @@ const input = document.getElementById("message");
 const sendBtn = document.getElementById("send");
 const cancelBtn = document.getElementById("cancel");
 const status = document.getElementById("status");
+const tasksEl = document.getElementById("tasks");
 const MAX_INPUT_HEIGHT = 160;
 let currentJobId = null;
 let currentPollTimer = null;
@@ -25,6 +26,42 @@ function addMessage(text, who) {
   div.querySelector(".text").textContent = text;
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
+}
+
+function renderTasks(tasks) {
+  if (!tasksEl) return;
+  tasksEl.innerHTML = "";
+
+  if (!Array.isArray(tasks) || tasks.length === 0) {
+    const empty = document.createElement("div");
+    empty.className = "task";
+    empty.textContent = "No daily tasks yet.";
+    tasksEl.appendChild(empty);
+    return;
+  }
+
+  tasks.forEach((task, index) => {
+    const item = document.createElement("div");
+    item.className = "task";
+    item.textContent = `${index + 1}. ${task}`;
+    tasksEl.appendChild(item);
+  });
+}
+
+async function fetchTasks() {
+  if (!tasksEl) return;
+  try {
+    const res = await fetch(`${API_BASE}/tasks?userId=default`, {
+      headers: {
+        "Authorization": `Bearer ${API_KEY}`
+      }
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    renderTasks(data?.tasks ?? []);
+  } catch {
+    // Ignore task fetch errors.
+  }
 }
 
 // Fallback for environments where key events fire but the input value doesn't update.
@@ -109,6 +146,7 @@ async function sendMessage() {
   currentJobId = jobId;
   cancelBtn.disabled = false;
   pollJob(jobId);
+  fetchTasks();
 }
 
 async function pollJob(jobId) {
@@ -177,3 +215,6 @@ input.onkeydown = (event) => {
 input.addEventListener("input", autoResizeInput);
 ensureInputUpdates();
 autoResizeInput();
+renderTasks([]);
+fetchTasks();
+setInterval(fetchTasks, 2000);

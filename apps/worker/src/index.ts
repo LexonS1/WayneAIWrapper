@@ -2,10 +2,10 @@
 import "dotenv/config";
 import { config, paths } from "./config/index.js";
 import { ensureFiles, resetDailyIfNeeded, readText } from "./memory/index.js";
-import { handleDailyTasksCommand, maybeHandleTaskCommand } from "./tasks/index.js";
+import { handleDailyTasksCommand, maybeHandleTaskCommand, readTasksList } from "./tasks/index.js";
 import { appendConversation } from "./conversation/index.js";
 import { ollamaGenerate } from "./llm/ollama.js";
-import { relayFetchNext, relayComplete, relayError } from "./relay/index.js";
+import { relayFetchNext, relayComplete, relayError, relayUpdateTasks } from "./relay/index.js";
 import { getNowStamp, maybeHandleTimeQuery } from "./utils/time.js";
 
 function buildPrompt(userText: string, personal: string, daily: string, notes: string) {
@@ -39,6 +39,11 @@ async function main() {
   await ensureFiles();
   console.log(`Worker started. Polling ${config.RELAY_API_URL} as userId="${config.USER_ID}"`);
   console.log(`Ollama: ${config.OLLAMA_URL} model=${config.OLLAMA_MODEL}`);
+  try {
+    await relayUpdateTasks(await readTasksList());
+  } catch (err: any) {
+    console.warn("Initial tasks sync failed:", err?.message ?? err);
+  }
 
   while (true) {
     try {
@@ -66,6 +71,7 @@ async function main() {
       if (dailyTasksReply) {
         await relayComplete(id, dailyTasksReply);
         await appendConversation(userText, dailyTasksReply);
+        await relayUpdateTasks(await readTasksList());
         continue;
       }
 
@@ -73,6 +79,7 @@ async function main() {
       if (taskReply) {
         await relayComplete(id, taskReply);
         await appendConversation(userText, taskReply);
+        await relayUpdateTasks(await readTasksList());
         continue;
       }
 
