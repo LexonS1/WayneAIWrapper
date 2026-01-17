@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <title>Wayne</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Orbitron:wght@500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
@@ -15,8 +18,10 @@
 
         <div id="input">
           <textarea id="message" placeholder="Type a message…"></textarea>
-          <button id="send">Send</button>
-          <button id="cancel" disabled>Cancel</button>
+          <div id="actions">
+            <button id="send">Send</button>
+            <button id="cancel" disabled>Cancel</button>
+          </div>
         </div>
 
         <div id="status"></div>
@@ -26,6 +31,12 @@
         <h2>Daily Tasks</h2>
         <div id="tasks"></div>
       </div>
+    </div>
+
+    <div id="status-bar">
+      <div class="status-item"><span class="dot" id="worker-dot"></span>Worker: <span id="worker-status">offline</span></div>
+      <div class="status-item"><span class="dot" id="relay-dot"></span>Relay: <span id="relay-status">offline</span></div>
+      <div class="status-item"><span class="dot" id="web-dot"></span>Web: <span id="web-status">online</span></div>
     </div>
   </div>
 

@@ -48,10 +48,18 @@ app.addHook("preHandler", async (req, reply) => {
 // --- In-memory job store (good for sanity check)
 const jobs = new Map<string, Job>();
 const tasksByUser = new Map<string, string[]>();
+const workerHeartbeatByUser = new Map<string, string>();
 
 app.get("/", async () => ({ ok: true, service: "wayne-relay-api" }));
 
 app.get("/health", async () => ({ ok: true }));
+
+app.get("/status", async (req) => {
+  const q = req.query as any;
+  const userId = String(q?.userId ?? "default");
+  const lastHeartbeat = workerHeartbeatByUser.get(userId) ?? null;
+  return { relay: "online", workerLastSeen: lastHeartbeat };
+});
 
 app.get("/tasks", async (req) => {
   const q = req.query as any;
@@ -93,6 +101,14 @@ app.post("/tasks", async (req, reply) => {
 
   tasksByUser.set(userId, clean);
   return { ok: true, count: clean.length };
+});
+
+app.post("/worker/heartbeat", async (req, reply) => {
+  const body = req.body as any;
+  const userId = String(body?.userId ?? "default");
+  const now = new Date().toISOString();
+  workerHeartbeatByUser.set(userId, now);
+  return { ok: true };
 });
 
 // Get job status

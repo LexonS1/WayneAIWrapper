@@ -7,6 +7,12 @@ const sendBtn = document.getElementById("send");
 const cancelBtn = document.getElementById("cancel");
 const status = document.getElementById("status");
 const tasksEl = document.getElementById("tasks");
+const workerDot = document.getElementById("worker-dot");
+const relayDot = document.getElementById("relay-dot");
+const webDot = document.getElementById("web-dot");
+const workerStatus = document.getElementById("worker-status");
+const relayStatus = document.getElementById("relay-status");
+const webStatus = document.getElementById("web-status");
 const MAX_INPUT_HEIGHT = 160;
 let currentJobId = null;
 let currentPollTimer = null;
@@ -61,6 +67,39 @@ async function fetchTasks() {
     renderTasks(data?.tasks ?? []);
   } catch {
     // Ignore task fetch errors.
+  }
+}
+
+function setStatus(dot, label, isOnline, text) {
+  if (!dot || !label) return;
+  dot.classList.toggle("online", isOnline);
+  dot.classList.toggle("offline", !isOnline);
+  label.textContent = text;
+}
+
+async function fetchStatus() {
+  setStatus(webDot, webStatus, true, "online");
+  try {
+    const res = await fetch(`${API_BASE}/status?userId=default`, {
+      headers: {
+        "Authorization": `Bearer ${API_KEY}`
+      }
+    });
+    if (!res.ok) {
+      setStatus(relayDot, relayStatus, false, "offline");
+      setStatus(workerDot, workerStatus, false, "offline");
+      return;
+    }
+    const data = await res.json();
+    setStatus(relayDot, relayStatus, true, "online");
+
+    const lastSeen = data?.workerLastSeen ? Date.parse(data.workerLastSeen) : NaN;
+    const ageMs = Number.isNaN(lastSeen) ? Infinity : Date.now() - lastSeen;
+    const workerOnline = ageMs < 8000;
+    setStatus(workerDot, workerStatus, workerOnline, workerOnline ? "online" : "offline");
+  } catch {
+    setStatus(relayDot, relayStatus, false, "offline");
+    setStatus(workerDot, workerStatus, false, "offline");
   }
 }
 
@@ -218,3 +257,5 @@ autoResizeInput();
 renderTasks([]);
 fetchTasks();
 setInterval(fetchTasks, 2000);
+fetchStatus();
+setInterval(fetchStatus, 2000);
