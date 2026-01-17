@@ -49,14 +49,14 @@ export async function relayUpdateTasks(tasks: string[]) {
   if (!res.ok) throw new Error(`Relay tasks error ${res.status}: ${await res.text()}`);
 }
 
-export async function relayHeartbeat() {
+export async function relayHeartbeat(status: "online" | "busy" = "online") {
   const res = await fetch(`${config.RELAY_API_URL}/worker/heartbeat`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${config.RELAY_API_KEY}`
     },
-    body: JSON.stringify({ userId: config.USER_ID })
+    body: JSON.stringify({ userId: config.USER_ID, status })
   });
 
   if (!res.ok) throw new Error(`Relay heartbeat error ${res.status}: ${await res.text()}`);

@@ -83,7 +83,18 @@ async function main() {
       const userText = String(job.message ?? "").trim();
       if (!userText) {
         await relayError(id, "Empty message");
+        try {
+          await relayHeartbeat("online");
+        } catch (err: any) {
+          console.warn("Online heartbeat failed:", err?.message ?? err);
+        }
         continue;
+      }
+
+      try {
+        await relayHeartbeat("busy");
+      } catch (err: any) {
+        console.warn("Busy heartbeat failed:", err?.message ?? err);
       }
 
       const dailyTasksReply = await handleDailyTasksCommand(userText);
@@ -92,6 +103,11 @@ async function main() {
         await appendConversation(userText, dailyTasksReply);
         await relayUpdateTasks(await readTasksList());
         await relayUpdatePersonal(await readPersonalItems());
+        try {
+          await relayHeartbeat("online");
+        } catch (err: any) {
+          console.warn("Online heartbeat failed:", err?.message ?? err);
+        }
         continue;
       }
 
@@ -101,6 +117,11 @@ async function main() {
         await appendConversation(userText, taskReply);
         await relayUpdateTasks(await readTasksList());
         await relayUpdatePersonal(await readPersonalItems());
+        try {
+          await relayHeartbeat("online");
+        } catch (err: any) {
+          console.warn("Online heartbeat failed:", err?.message ?? err);
+        }
         continue;
       }
 
@@ -124,6 +145,11 @@ async function main() {
         await relayUpdatePersonal(await readPersonalItems());
       } catch (err: any) {
         console.warn("Personal sync failed:", err?.message ?? err);
+      }
+      try {
+        await relayHeartbeat("online");
+      } catch (err: any) {
+        console.warn("Online heartbeat failed:", err?.message ?? err);
       }
     } catch (err: any) {
       console.error("Worker loop error:", err?.message ?? err);

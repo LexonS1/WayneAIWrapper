@@ -112,7 +112,25 @@ function setStatus(dot, label, isOnline, text) {
   if (!dot || !label) return;
   dot.classList.toggle("online", isOnline);
   dot.classList.toggle("offline", !isOnline);
+  dot.classList.remove("busy");
   label.textContent = text;
+}
+
+function setWorkerStatus(state) {
+  if (!workerDot || !workerStatus) return;
+  workerDot.classList.remove("online", "offline", "busy");
+  if (state === "busy") {
+    workerDot.classList.add("busy");
+    workerStatus.textContent = "busy";
+    return;
+  }
+  if (state === "online") {
+    workerDot.classList.add("online");
+    workerStatus.textContent = "online";
+    return;
+  }
+  workerDot.classList.add("offline");
+  workerStatus.textContent = "offline";
 }
 
 async function fetchStatus() {
@@ -125,7 +143,7 @@ async function fetchStatus() {
     });
     if (!res.ok) {
       setStatus(relayDot, relayStatus, false, "offline");
-      setStatus(workerDot, workerStatus, false, "offline");
+      setWorkerStatus("offline");
       return;
     }
     const data = await res.json();
@@ -133,11 +151,16 @@ async function fetchStatus() {
 
     const lastSeen = data?.workerLastSeen ? Date.parse(data.workerLastSeen) : NaN;
     const ageMs = Number.isNaN(lastSeen) ? Infinity : Date.now() - lastSeen;
-    const workerOnline = ageMs < 8000;
-    setStatus(workerDot, workerStatus, workerOnline, workerOnline ? "online" : "offline");
+    const workerOnline = ageMs < 15000;
+    if (!workerOnline) {
+      setWorkerStatus("offline");
+      return;
+    }
+    const workerState = data?.workerStatus === "busy" ? "busy" : "online";
+    setWorkerStatus(workerState);
   } catch {
     setStatus(relayDot, relayStatus, false, "offline");
-    setStatus(workerDot, workerStatus, false, "offline");
+    setWorkerStatus("offline");
   }
 }
 
