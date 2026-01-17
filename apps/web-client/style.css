@@ -42,7 +42,8 @@ body {
 
 .message { margin-bottom: 8px; white-space: pre-wrap; }
 .message .speaker { font-weight: 600; }
-.user { color: #8cf; }
+.user .speaker { color: #5aaeff; }
+.user .text { color: #ff6b6b; }
 .wayne .speaker { color: #a66bff; }
 .wayne .text { color: #9f9; }
 
