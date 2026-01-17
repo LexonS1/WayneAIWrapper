@@ -17,7 +17,9 @@ function autoResizeInput() {
 function addMessage(text, who) {
   const div = document.createElement("div");
   div.className = `message ${who}`;
-  div.textContent = `${who === "user" ? "You" : "Wayne"}: ${text}`;
+  const label = who === "user" ? "You" : "Wayne";
+  div.innerHTML = `<span class="speaker">${label}:</span> <span class="text"></span>`;
+  div.querySelector(".text").textContent = text;
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
 }

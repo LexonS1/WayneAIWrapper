@@ -17,11 +17,34 @@ body {
   overflow-y: auto;
   margin-bottom: 10px;
   background: #0b0b0b;
+  scrollbar-width: thin;
+  scrollbar-color: #333 #141414;
+}
+
+#chat::-webkit-scrollbar {
+  width: 10px;
+}
+
+#chat::-webkit-scrollbar-track {
+  background: #141414;
+  border-radius: 8px;
+}
+
+#chat::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 8px;
+  border: 2px solid #141414;
+}
+
+#chat::-webkit-scrollbar-thumb:hover {
+  background: #3f3f3f;
 }
 
 .message { margin-bottom: 8px; white-space: pre-wrap; }
+.message .speaker { font-weight: 600; }
 .user { color: #8cf; }
-.wayne { color: #9f9; }
+.wayne .speaker { color: #a66bff; }
+.wayne .text { color: #9f9; }
 
 #input {
   display: flex;
