@@ -7,7 +7,12 @@ export function registerAuth(app: FastifyInstance) {
     if (req.method === "OPTIONS") return;
 
     const auth = req.headers.authorization || "";
-    const ok = auth === `Bearer ${config.API_KEY}`;
+    const url = req.raw.url || "";
+    const token = (req.query as any)?.token ?? "";
+    const isStream = req.method === "GET" && url.includes("/stream");
+    const ok =
+      auth === `Bearer ${config.API_KEY}` ||
+      (isStream && token === config.API_KEY);
     if (!ok) {
       return reply.code(401).send({ error: "Unauthorized" });
     }

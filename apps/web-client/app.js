@@ -20,6 +20,8 @@ const MAX_INPUT_HEIGHT = 160;
 let currentJobId = null;
 let currentPollTimer = null;
 let statusClearTimer = null;
+let currentStream = null;
+let currentStreamText = null;
 
 function autoResizeInput() {
   input.style.height = "auto";
@@ -36,6 +38,50 @@ function addMessage(text, who) {
   div.querySelector(".text").textContent = text;
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
+}
+
+function startStreamedMessage() {
+  const div = document.createElement("div");
+  div.className = "message wayne";
+  div.innerHTML = `<span class="speaker">Wayne:</span> <span class="text"></span>`;
+  const textEl = div.querySelector(".text");
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+  return textEl;
+}
+
+function closeStream() {
+  if (currentStream) {
+    currentStream.close();
+    currentStream = null;
+  }
+}
+
+function startStream(jobId) {
+  closeStream();
+  currentStreamText = startStreamedMessage();
+  const streamUrl = `${API_BASE}/jobs/${jobId}/stream?token=${encodeURIComponent(API_KEY)}`;
+  currentStream = new EventSource(streamUrl);
+
+  currentStream.onmessage = (event) => {
+    try {
+      const data = JSON.parse(event.data);
+      if (data.delta && currentStreamText) {
+        currentStreamText.textContent += data.delta;
+        chat.scrollTop = chat.scrollHeight;
+      }
+      if (data.cancelled || data.done || data.error) {
+        closeStream();
+      }
+    } catch {
+      // Ignore malformed stream data.
+    }
+  };
+
+  currentStream.onerror = () => {
+    closeStream();
+    currentStreamText = null;
+  };
 }
 
 function renderTasks(tasks) {
@@ -284,6 +330,7 @@ async function sendMessage() {
   const { jobId } = await res.json();
   currentJobId = jobId;
   cancelBtn.disabled = false;
+  startStream(jobId);
   pollJob(jobId);
   fetchTasks();
 }
@@ -303,7 +350,14 @@ async function pollJob(jobId) {
     if (job.status === "done") {
       clearInterval(currentPollTimer);
       currentPollTimer = null;
-      addMessage(job.reply, "wayne");
+      if (currentStreamText) {
+        if (!currentStreamText.textContent && job.reply) {
+          currentStreamText.textContent = job.reply;
+        }
+        currentStreamText = null;
+      } else {
+        addMessage(job.reply, "wayne");
+      }
       status.textContent = "";
       currentJobId = null;
       cancelBtn.disabled = true;
@@ -319,6 +373,8 @@ async function pollJob(jobId) {
       }, 3000);
       currentJobId = null;
       cancelBtn.disabled = true;
+      closeStream();
+      currentStreamText = null;
     }
   }, 250);
 }
@@ -349,6 +405,8 @@ async function cancelMessage() {
     status.textContent = "";
   }, 3000);
   currentJobId = null;
+  closeStream();
+  currentStreamText = null;
 }
 
 sendBtn.onclick = sendMessage;

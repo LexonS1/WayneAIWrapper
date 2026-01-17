@@ -92,3 +92,17 @@ export async function relayUpdateWeather(summary: {
 
   if (!res.ok) throw new Error(`Relay weather error ${res.status}: ${await res.text()}`);
 }
+
+export async function relayStreamChunk(id: string, delta: string) {
+  const res = await fetch(`${config.RELAY_API_URL}/jobs/${encodeURIComponent(id)}/chunk`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${config.RELAY_API_KEY}`
+    },
+    body: JSON.stringify({ delta })
+  });
+
+  if (res.status === 409) return;
+  if (!res.ok) throw new Error(`Relay chunk error ${res.status}: ${await res.text()}`);
+}

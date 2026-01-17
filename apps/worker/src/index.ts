@@ -6,8 +6,8 @@ import { handleDailyTasksCommand, maybeHandleTaskCommand, readTasksList } from "
 import { readPersonalItems } from "./personal/index.js";
 import { readWeatherSummary, refreshWeather, shouldRefreshForQuery } from "./weather/index.js";
 import { appendConversation } from "./conversation/index.js";
-import { ollamaGenerate } from "./llm/ollama.js";
-import { relayFetchNext, relayComplete, relayError, relayUpdateTasks, relayHeartbeat, relayUpdatePersonal, relayUpdateWeather } from "./relay/index.js";
+import { ollamaGenerateStream } from "./llm/ollama.js";
+import { relayFetchNext, relayComplete, relayError, relayUpdateTasks, relayHeartbeat, relayUpdatePersonal, relayUpdateWeather, relayStreamChunk } from "./relay/index.js";
 import { getNowStamp, maybeHandleTimeQuery } from "./utils/time.js";
 
 function buildPrompt(
@@ -193,7 +193,11 @@ async function main() {
       const weatherWeek = await readText(paths.WEATHER_WEEK);
 
       const prompt = buildPrompt(userText, personal, daily, notes, weatherDay, weatherWeek);
-      const reply = await ollamaGenerate(prompt);
+      const reply = await ollamaGenerateStream(prompt, (delta) => {
+        relayStreamChunk(id, delta).catch((err: any) => {
+          console.warn("Relay chunk failed:", err?.message ?? err);
+        });
+      });
 
       await relayComplete(id, reply);
       await appendConversation(userText, reply);
