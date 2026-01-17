@@ -20,10 +20,23 @@ const PORT = Number(process.env.PORT || 3000);
 
 const app = Fastify({ logger: true });
 
+// --- Basic CORS support for local web client
+app.addHook("onRequest", async (req, reply) => {
+  reply.header("Access-Control-Allow-Origin", "*");
+  reply.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  reply.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  reply.header("Access-Control-Max-Age", "86400");
+
+  if (req.method === "OPTIONS") {
+    return reply.code(204).send();
+  }
+});
+
 // --- Simple API key auth (header: Authorization: Bearer <key>)
 app.addHook("preHandler", async (req, reply) => {
   // Allow health check without auth
-  if (req.url === "/health") return;
+  if (req.url === "/" || req.url === "/health") return;
+  if (req.method === "OPTIONS") return;
 
   const auth = req.headers.authorization || "";
   const ok = auth === `Bearer ${API_KEY}`;
@@ -34,6 +47,8 @@ app.addHook("preHandler", async (req, reply) => {
 
 // --- In-memory job store (good for sanity check)
 const jobs = new Map<string, Job>();
+
+app.get("/", async () => ({ ok: true, service: "wayne-relay-api" }));
 
 app.get("/health", async () => ({ ok: true }));
 
@@ -114,6 +129,6 @@ app.post("/jobs/:id/error", async (req, reply) => {
   return { ok: true };
 });
 
-app.listen({ port: PORT, host: "127.0.0.1" }).then(() => {
+app.listen({ port: PORT, host: "0.0.0.0" }).then(() => {
   console.log(`Relay API listening on http://127.0.0.1:${PORT}`);
 });

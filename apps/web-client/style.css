@@ -1,0 +1,65 @@
+body {
+  font-family: system-ui, sans-serif;
+  background: #111;
+  color: #eee;
+}
+
+#app {
+  max-width: 600px;
+  margin: 40px auto;
+  padding: 0 12px;
+}
+
+#chat {
+  border: 1px solid #333;
+  padding: 10px;
+  height: 400px;
+  overflow-y: auto;
+  margin-bottom: 10px;
+  background: #0b0b0b;
+}
+
+.message { margin-bottom: 8px; white-space: pre-wrap; }
+.user { color: #8cf; }
+.wayne { color: #9f9; }
+
+#input {
+  display: flex;
+  gap: 8px;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+#message {
+  flex: 1;
+  padding: 10px;
+  font-size: 16px;
+  position: relative;
+  z-index: 10;
+  pointer-events: auto;
+  background: #1a1a1a;
+  color: #eee;
+  border: 1px solid #333;
+  border-radius: 6px;
+  outline: none;
+}
+
+#message:focus {
+  border-color: #555;
+}
+
+#send {
+  padding: 10px 14px;
+  font-size: 16px;
+  background: #222;
+  color: #eee;
+  border: 1px solid #333;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#status {
+  margin-top: 8px;
+  color: #aaa;
+}

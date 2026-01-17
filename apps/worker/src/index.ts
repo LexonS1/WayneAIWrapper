@@ -8,7 +8,7 @@ const OLLAMA_URL = process.env.OLLAMA_URL || "http://localhost:11434";
 const OLLAMA_MODEL = process.env.OLLAMA_MODEL || "qwen2.5:7b";
 
 const USER_ID = process.env.USER_ID || "default";
-const POLL_MS = Number(process.env.POLL_MS || 1200);
+const POLL_MS = Number(process.env.POLL_MS || 300);
 
 const MEM_ROOT = path.join(process.cwd(), "memory");
 const PERSONAL = path.join(MEM_ROOT, "personal_data.md");
@@ -72,13 +72,20 @@ async function ollamaGenerate(prompt: string) {
     body: JSON.stringify({
       model: OLLAMA_MODEL,
       prompt,
-      stream: false
+      stream: false,
+      options: {
+        num_predict: 200,   // max tokens (lower = faster)
+        temperature: 0.4,   // steadier output
+        top_p: 0.9
+      }
     })
   });
+
   if (!res.ok) throw new Error(`Ollama error ${res.status}: ${await res.text()}`);
-  const data = await res.json() as { response?: string };
+  const data = (await res.json()) as { response?: string };
   return (data.response ?? "").trim();
 }
+
 
 // Very simple task command handler (v1 sanity)
 async function maybeHandleTaskCommand(userText: string): Promise<string | null> {

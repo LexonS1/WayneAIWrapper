@@ -4,6 +4,16 @@
   "type": "module",
   "scripts": {
     "dev": "tsx src/index.ts",
-    "start": "node dist/index.js"
+    "start": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "fastify": "^4.26.0",
+    "dotenv": "^16.4.0",
+    "uuid": "^9.0.1",
+    "tsx": "^4.7.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/node": "^20.11.0"
   }
 }
