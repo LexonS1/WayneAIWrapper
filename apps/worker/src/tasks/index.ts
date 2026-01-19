@@ -1,7 +1,6 @@
 
-import { promises as fs } from "node:fs";
 import { paths } from "../config/index.js";
-import { readText } from "../memory/index.js";
+import { readText, writeText } from "../memory/index.js";
 
 export function parseTasks(text: string) {
   return text
@@ -19,7 +18,7 @@ export function formatTasks(tasks: string[]) {
 
 export async function writeTasks(tasks: string[]) {
   const content = tasks.map(task => `- ${task}`).join("\n");
-  await fs.writeFile(paths.DAILY, content ? `${content}\n` : "", "utf8");
+  await writeText(paths.DAILY, content ? `${content}\n` : "");
 }
 
 export async function readTasksList(): Promise<string[]> {

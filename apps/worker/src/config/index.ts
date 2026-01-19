@@ -6,6 +6,7 @@ export const config = {
   RELAY_API_KEY: process.env.RELAY_API_KEY,
   OLLAMA_URL: process.env.OLLAMA_URL,
   OLLAMA_MODEL: process.env.OLLAMA_MODEL,
+  OLLAMA_INTENT_MODEL: process.env.OLLAMA_INTENT_MODEL,
   USER_ID: process.env.USER_ID || "default",
   POLL_MS: Number(process.env.POLL_MS || 300)
 };
@@ -20,6 +21,7 @@ export const paths = {
   WEATHER_DAY: path.join(MEM_ROOT, "weather_day.md"),
   WEATHER_WEEK: path.join(MEM_ROOT, "weather_week.md"),
   WEATHER_META: path.join(MEM_ROOT, "weather_meta.json"),
+  SETTINGS: path.join(MEM_ROOT, "settings.json"),
   CONV_DIR: path.join(MEM_ROOT, "conversation"),
   RESET_META: path.join(MEM_ROOT, "meta_daily_reset.txt")
 };

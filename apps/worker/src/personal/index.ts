@@ -1,5 +1,4 @@
-import { promises as fs } from "node:fs";
-import { readText } from "../memory/index.js";
+import { readText, writeText } from "../memory/index.js";
 import { paths } from "../config/index.js";
 
 export type PersonalItem = { key: string; value: string };
@@ -34,7 +33,7 @@ export function buildIndex(items: PersonalItem[]) {
 
 export async function writePersonal(items: PersonalItem[]) {
   const content = items.map(item => `- ${item.key}: ${item.value}`).join("\n");
-  await fs.writeFile(paths.PERSONAL, content ? `${content}\n` : "", "utf8");
+  await writeText(paths.PERSONAL, content ? `${content}\n` : "");
 }
 
 export async function readPersonalItems(): Promise<PersonalItem[]> {

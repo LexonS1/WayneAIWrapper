@@ -21,6 +21,6 @@ export function maybeHandleHelpQuery(userText: string): string | null {
     "- Time/date: what's the time, what's the date, what day is it",
     "- Weather: weather, forecast, temperature",
     "- Personal data: list personal data, set my weight to 180, what's my name",
-    "- Notes: show notes"
+    "- Notes: list notes, add note <text>, remove note <num|text>"
   ].join("\n");
 }

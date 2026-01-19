@@ -1,35 +1,8 @@
-Core additions that will give the biggest reliability boost next:
+If you want “less hardcoded, more dynamic,” the next best steps are:
 
-Personal data commands (set/get name, weight, etc.) so updates are deterministic, not just implied by LLM.
-Notes commands (add/list/remove) since notes already live in memory.
-Weather “now/refresh” command to force update and return summary immediately.
-Simple command prefix (task ..., note ..., personal ...) to remove ambiguity long‑term.
-Worker refactor ideas (optional, not required now):
-
-Extract the streaming flush logic into a helper (streaming.ts) so loop.ts is slimmer.
-Pull the per‑request “command handling” chain into a handlers.ts to clarify the flow.
-Add a tiny types.ts for Job and WorkerState to document expected shapes.
-If you want, I can design the personal/notes command spec first, then implement.
-
-
-
-
-You already update weather on a timer (hourly) and you still read weather files every request. Two improvements:
-
-Only read weather_day.md / weather_week.md when shouldRefreshForQuery(userText) is true.
-Keep the periodic refresh so the website stays up‑to‑date regardless of queries.
-Caching files in RAM (simple approach)
-Use a small in‑memory cache keyed by path:
-
-On readText(path), return cached value if it’s fresh.
-Refresh cache on a TTL (e.g., 5–10 seconds) or by checking file mtime.
-When you write a file, also update the cache entry immediately.
-That gives you:
-
-fewer disk reads per request
-up‑to‑date values after writes
-simple, deterministic behavior
-If you want, I can implement:
-
-weather read gating in the worker loop, and
-a tiny cache.ts for read‑through caching with TTL or mtime checking.
+Move constants (location, TTLs, polling intervals, command triggers) into a settings.json in memory and load it at runtime.
+Create a command registry (index.ts) so handlers self‑register and you can enable/disable via config.
+Add a “profile” loader that reads personal data into a structured object (name, weight, location) and uses it to drive weather/timezone.
+Add model routing config (fast/quality) in settings so it’s not hardwired in code.
+Make prompt sections dynamic: include only data keys that match the query (e.g., if asking about weight, include just weight).
+If you want, I can draft a simple settings.json schema and wire it into the worker.

@@ -7,6 +7,7 @@ import {
   relayUpdatePersonal,
   relayUpdateWeather
 } from "../relay/index.js";
+import { getSettings } from "../settings/index.js";
 
 export function startHeartbeat(getState: () => "online" | "busy") {
   setInterval(() => {
@@ -16,7 +17,9 @@ export function startHeartbeat(getState: () => "online" | "busy") {
   }, 3000);
 }
 
-export function startWeatherRefresh() {
+export async function startWeatherRefresh() {
+  const settings = await getSettings();
+  const intervalMs = settings.weather.refreshIntervalMs;
   setInterval(() => {
     refreshWeather(false)
       .then(async () => {
@@ -25,7 +28,7 @@ export function startWeatherRefresh() {
       .catch((err: any) => {
         console.warn("Weather refresh failed:", err?.message ?? err);
       });
-  }, 60 * 60 * 1000);
+  }, intervalMs);
 }
 
 export async function runInitialSync(workerState: "online" | "busy") {

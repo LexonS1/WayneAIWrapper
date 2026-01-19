@@ -1,0 +1,11 @@
+ok cool i guess. so how should the code base get organized. i will have hundreds of custom functions, like inches 
+to meters then add prefixes like cm km and so on. also like lbs to kgs to g. If i imagine how i want to use wayne 
+it goes like this: I wake up and talk to wayne, "Wayne, what should i wear today?", "Sir (or ma'am), to prepare 
+for outside wear a light jacket, rainboots, and bring and umbrella as temperatures are 30F and slight rain at 3pm, 
+also bring water.... so on", Later i say, "Wayne what do i need to do today?", "Your list contains....", "Wayne add 
+physics homework to my list(aka tasks but not daily_tasks bc i dont want it reset 24hrs)", "Wayne what is the conversion 
+from 14inches to nano-meters", "The conversion is 412... nano-meters", "Wayne, add 400 calories to my daily intake", 
+"Done. You have 1200 calories left for the day.", "Wayne add 1 bottle of water", "Finished. You drank 3 bottles or 100oz
+ of water today", "Wayne, add 1 mile to weekly amount/runs", "Done. Progress shows 3 miles out of 5 miles for the week"... 
+ 
+ .....................i want this time of tone, responses and so on from wayne

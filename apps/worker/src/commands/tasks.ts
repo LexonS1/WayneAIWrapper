@@ -123,3 +123,13 @@ export async function maybeHandleTaskCommand(userText: string): Promise<string |
   await writeTasks(tasks);
   return `Added task ${tasks.length}: "${task}".`;
 }
+
+export async function addTaskText(task: string): Promise<string> {
+  const trimmed = task.trim();
+  if (!trimmed) return "Tell me the task text to add.";
+  const current = await readText(paths.DAILY);
+  const tasks = parseTasks(current);
+  tasks.push(trimmed);
+  await writeTasks(tasks);
+  return `Added task ${tasks.length}: "${trimmed}".`;
+}

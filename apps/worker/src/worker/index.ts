@@ -11,7 +11,7 @@ export async function startWorker() {
   const workerState: { value: "online" | "busy" } = { value: "online" };
 
   startHeartbeat(() => workerState.value);
-  startWeatherRefresh();
+  await startWeatherRefresh();
   await runInitialSync(workerState.value);
   await runWorkerLoop(workerState);
 }

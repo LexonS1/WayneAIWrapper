@@ -1,9 +1,14 @@
 import { config, paths } from "../config/index.js";
 import { resetDailyIfNeeded, readText } from "../memory/index.js";
-import { handleDailyTasksCommand, maybeHandleTaskCommand } from "../commands/tasks.js";
+import { addTaskText, handleDailyTasksCommand, maybeHandleTaskCommand } from "../commands/tasks.js";
 import { readTasksList } from "../tasks/index.js";
-import { handlePersonalCommand } from "../commands/personal.js";
-import { readPersonalItems } from "../personal/index.js";
+import {
+  getPersonalAge,
+  getPersonalValue,
+  handlePersonalCommand,
+  setPersonalValue
+} from "../commands/personal.js";
+import { parsePersonal, readPersonalItems } from "../personal/index.js";
 import { readWeatherSummary, refreshWeather, shouldRefreshForQuery } from "../weather/index.js";
 import { appendConversation } from "../conversation/index.js";
 import { ollamaGenerateStream } from "../llm/ollama.js";
@@ -20,6 +25,8 @@ import {
 import { maybeHandleTimeQuery } from "../commands/time.js";
 import { buildPrompt } from "../prompt.js";
 import { maybeHandleHelpQuery } from "../commands/help.js";
+import { handleNotesCommand } from "../commands/notes.js";
+import { classifyIntent } from "../intent/classifier.js";
 
 export async function runWorkerLoop(workerState: { value: "online" | "busy" }) {
   while (true) {
@@ -62,7 +69,15 @@ export async function runWorkerLoop(workerState: { value: "online" | "busy" }) {
         console.warn("Busy heartbeat failed:", err?.message ?? err);
       }
 
-      if (shouldRefreshForQuery(userText)) {
+      const personalRaw = await readText(paths.PERSONAL);
+      const personalKeys = parsePersonal(personalRaw).map(item => item.key);
+      const intent = await classifyIntent(userText, { personalKeys });
+      if (intent.intent !== "none") {
+        console.log(`Intent classifier: ${intent.intent}`);
+      }
+      const wantsWeather = intent.intent === "weather.current" || shouldRefreshForQuery(userText);
+
+      if (wantsWeather) {
         try {
           await refreshWeather(false);
           await relayUpdateWeather(await readWeatherSummary());
@@ -111,12 +126,78 @@ export async function runWorkerLoop(workerState: { value: "online" | "busy" }) {
         continue;
       }
 
+      if (intent.intent === "tasks.add") {
+        const text = typeof intent.args?.text === "string" ? intent.args.text : "";
+        const reply = await addTaskText(text);
+        console.log(`Command handled: tasks (intent add) text="${userText}"`);
+        await relayComplete(id, reply);
+        await appendConversation(userText, reply);
+        await relayUpdateTasks(await readTasksList());
+        await relayUpdatePersonal(await readPersonalItems());
+        workerState.value = "online";
+        try {
+          await relayHeartbeat(workerState.value);
+        } catch (err: any) {
+          console.warn("Online heartbeat failed:", err?.message ?? err);
+        }
+        continue;
+      }
+
+      if (intent.intent === "tasks.list") {
+        const tasks = await readTasksList();
+        const reply = `Here are your daily tasks:\n${tasks.length ? tasks.map((task, index) => `${index + 1}. ${task}`).join("\n") : "No daily tasks yet."}`;
+        console.log(`Command handled: tasks (intent list) text="${userText}"`);
+        await relayComplete(id, reply);
+        await appendConversation(userText, reply);
+        continue;
+      }
+
+      if (intent.intent === "personal.age") {
+        const reply =
+          (await getPersonalAge()) ??
+          "I don't have your birthday yet. Set it and I can calculate your age.";
+        console.log(`Command handled: personal (intent age) text="${userText}"`);
+        await relayComplete(id, reply);
+        await appendConversation(userText, reply);
+        continue;
+      }
+
+      if (intent.intent === "personal.get") {
+        const key = typeof intent.args?.key === "string" ? intent.args.key : "";
+        const reply =
+          (await getPersonalValue(key)) ??
+          `I don't have "${key}" yet. Use "set ${key} to ..." to add it.`;
+        console.log(`Command handled: personal (intent get) text="${userText}"`);
+        await relayComplete(id, reply);
+        await appendConversation(userText, reply);
+        continue;
+      }
+
+      if (intent.intent === "personal.set") {
+        const key = typeof intent.args?.key === "string" ? intent.args.key : "";
+        const value = typeof intent.args?.value === "string" ? intent.args.value : "";
+        const reply = await setPersonalValue(key, value);
+        console.log(`Command handled: personal (intent set) text="${userText}"`);
+        await relayComplete(id, reply);
+        await appendConversation(userText, reply);
+        await relayUpdatePersonal(await readPersonalItems());
+        continue;
+      }
+
       const personalReply = await handlePersonalCommand(userText);
       if (personalReply) {
         console.log(`Command handled: personal text="${userText}"`);
         await relayComplete(id, personalReply);
         await appendConversation(userText, personalReply);
         await relayUpdatePersonal(await readPersonalItems());
+        continue;
+      }
+
+      const notesReply = await handleNotesCommand(userText);
+      if (notesReply) {
+        console.log(`Command handled: notes text="${userText}"`);
+        await relayComplete(id, notesReply);
+        await appendConversation(userText, notesReply);
         continue;
       }
 
@@ -128,13 +209,21 @@ export async function runWorkerLoop(workerState: { value: "online" | "busy" }) {
         continue;
       }
 
-      const personal = await readText(paths.PERSONAL);
+      const personal = personalRaw;
       const daily = await readText(paths.DAILY);
       const notes = await readText(paths.NOTES);
-      const weatherDay = await readText(paths.WEATHER_DAY);
-      const weatherWeek = await readText(paths.WEATHER_WEEK);
+      const weatherDay = wantsWeather ? await readText(paths.WEATHER_DAY) : "";
+      const weatherWeek = wantsWeather ? await readText(paths.WEATHER_WEEK) : "";
 
-      const prompt = buildPrompt(userText, personal, daily, notes, weatherDay, weatherWeek);
+      const prompt = await buildPrompt(
+        userText,
+        personal,
+        daily,
+        notes,
+        weatherDay,
+        weatherWeek,
+        wantsWeather
+      );
       let pendingStream = "";
       let lastFlushAt = Date.now();
       const flushIntervalMs = 60;

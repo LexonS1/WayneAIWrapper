@@ -1,10 +1,6 @@
-import { promises as fs } from "node:fs";
 import { paths } from "../config/index.js";
-
-const LAT = 30.2241;
-const LON = -92.0198;
-const TZ = "America/Chicago";
-const TTL_MS = 30 * 60 * 1000;
+import { readText, writeText } from "../memory/index.js";
+import { getSettings } from "../settings/index.js";
 
 function weatherCodeToText(code: number) {
   const map: Record<number, string> = {
@@ -65,25 +61,27 @@ type WeatherApi = {
 
 async function readMeta(): Promise<WeatherMeta> {
   try {
-    const raw = await fs.readFile(paths.WEATHER_META, "utf8");
-    return JSON.parse(raw || "{}");
+    const raw = await readText(paths.WEATHER_META);
+    return raw ? JSON.parse(raw) : {};
   } catch {
     return {};
   }
 }
 
 async function writeMeta(meta: WeatherMeta) {
-  await fs.writeFile(paths.WEATHER_META, JSON.stringify(meta), "utf8");
+  await writeText(paths.WEATHER_META, JSON.stringify(meta));
 }
 
 async function fetchWeather(): Promise<WeatherApi> {
+  const settings = await getSettings();
+  const { lat, lon, timezone } = settings.weather;
   const url =
     "https://api.open-meteo.com/v1/forecast" +
-    `?latitude=${LAT}&longitude=${LON}` +
+    `?latitude=${lat}&longitude=${lon}` +
     "&current=temperature_2m,apparent_temperature,precipitation,weather_code" +
     "&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum" +
     "&temperature_unit=fahrenheit" +
-    `&timezone=${encodeURIComponent(TZ)}`;
+    `&timezone=${encodeURIComponent(timezone)}`;
 
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Weather fetch error ${res.status}: ${await res.text()}`);
@@ -143,9 +141,10 @@ function buildWeekMd(data: WeatherApi) {
 }
 
 export async function refreshWeather(force = false) {
+  const settings = await getSettings();
   const meta = await readMeta();
   const now = Date.now();
-  if (!force && meta.updatedAt && now - meta.updatedAt < TTL_MS) return;
+  if (!force && meta.updatedAt && now - meta.updatedAt < settings.weather.ttlMs) return;
 
   const data = await fetchWeather();
   const current = data?.current ?? {};
@@ -162,8 +161,8 @@ export async function refreshWeather(force = false) {
   const dayMd = buildDayMd(data);
   const weekMd = buildWeekMd(data);
 
-  await fs.writeFile(paths.WEATHER_DAY, dayMd + "\n", "utf8");
-  await fs.writeFile(paths.WEATHER_WEEK, weekMd + "\n", "utf8");
+  await writeText(paths.WEATHER_DAY, dayMd + "\n");
+  await writeText(paths.WEATHER_WEEK, weekMd + "\n");
   await writeMeta(summary);
 }
 
