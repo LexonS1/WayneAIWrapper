@@ -1,53 +1,53 @@
-const API_BASE = "https://wayne-relay-api.onrender.com";
-const API_KEY = "dev-secret"; // OK for now (personal use)
+const API_BASE = "..."https://wayne-relay-api.onrender.com"...";
+const API_KEY = "..."dev-secret"..."; // OK for now (personal use)
 
-const chat = document.getElementById("chat");
-const input = document.getElementById("message");
-const sendBtn = document.getElementById("send");
-const cancelBtn = document.getElementById("cancel");
-const status = document.getElementById("status");
-const tasksEl = document.getElementById("tasks");
-const personalEl = document.getElementById("personal");
-const workerDot = document.getElementById("worker-dot");
-const relayDot = document.getElementById("relay-dot");
-const webDot = document.getElementById("web-dot");
-const workerStatus = document.getElementById("worker-status");
-const relayStatus = document.getElementById("relay-status");
-const webStatus = document.getElementById("web-status");
-const statusWeather = document.getElementById("status-weather");
-const statusTime = document.getElementById("status-time");
+const chat = document.getElementById("..."chat"...");
+const input = document.getElementById("..."message"...");
+const sendBtn = document.getElementById("..."send"...");
+const cancelBtn = document.getElementById("..."cancel"...");
+const status = document.getElementById("..."status"...");
+const tasksEl = document.getElementById("..."tasks"...");
+const personalEl = document.getElementById("..."personal"...");
+const workerDot = document.getElementById("..."worker-dot"...");
+const relayDot = document.getElementById("..."relay-dot"...");
+const webDot = document.getElementById("..."web-dot"...");
+const workerStatus = document.getElementById("..."worker-status"...");
+const relayStatus = document.getElementById("..."relay-status"...");
+const webStatus = document.getElementById("..."web-status"...");
+const statusWeather = document.getElementById("..."status-weather"...");
+const statusTime = document.getElementById("..."status-time"...");
 const MAX_INPUT_HEIGHT = 160;
 let currentJobId = null;
 let currentPollTimer = null;
 let statusClearTimer = null;
 let currentStream = null;
 let currentStreamText = null;
-let streamBuffer = "";
+let streamBuffer = "...";
 let streamFlushHandle = null;
 let streamHasOutput = false;
 
 function autoResizeInput() {
-  input.style.height = "auto";
+  input.style.height = "..."auto"...";
   const nextHeight = Math.min(input.scrollHeight, MAX_INPUT_HEIGHT);
   input.style.height = `${nextHeight}px`;
-  input.style.overflowY = input.scrollHeight > MAX_INPUT_HEIGHT ? "auto" : "hidden";
+  input.style.overflowY = input.scrollHeight > MAX_INPUT_HEIGHT ? "..."auto"..." : "..."hidden"...";
 }
 
 function addMessage(text, who) {
-  const div = document.createElement("div");
+  const div = document.createElement("..."div"...");
   div.className = `message ${who}`;
-  const label = who === "user" ? "You" : "Wayne";
-  div.innerHTML = `<span class="speaker">${label}:</span> <span class="text"></span>`;
-  div.querySelector(".text").textContent = text;
+  const label = who === "..."user"..." ? "..."You"..." : "..."Wayne"...";
+  div.innerHTML = `<span class="..."speaker"...">${label}:</span> <span class="..."text"..."></span>`;
+  div.querySelector("...".text"...").textContent = text;
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
 }
 
 function startStreamedMessage() {
-  const div = document.createElement("div");
-  div.className = "message wayne";
-  div.innerHTML = `<span class="speaker">Wayne:</span> <span class="text"></span>`;
-  const textEl = div.querySelector(".text");
+  const div = document.createElement("..."div"...");
+  div.className = "..."message wayne"...";
+  div.innerHTML = `<span class="..."speaker"...">Wayne:</span> <span class="..."text"..."></span>`;
+  const textEl = div.querySelector("...".text"...");
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
   return textEl;
@@ -58,7 +58,7 @@ function closeStream() {
     currentStream.close();
     currentStream = null;
   }
-  streamBuffer = "";
+  streamBuffer = "...";
   if (streamFlushHandle) {
     cancelAnimationFrame(streamFlushHandle);
     streamFlushHandle = null;
@@ -78,7 +78,7 @@ function startStream(jobId) {
       return;
     }
     currentStreamText.textContent += streamBuffer;
-    streamBuffer = "";
+    streamBuffer = "...";
     chat.scrollTop = chat.scrollHeight;
     streamFlushHandle = null;
   };
@@ -86,12 +86,10 @@ function startStream(jobId) {
   currentStream.onmessage = (event) => {
     try {
       const data = JSON.parse(event.data);
-      if (data.ready && currentStreamText && !streamHasOutput) {
-        currentStreamText.textContent = "…";
-      }
+      if (data.ready && currentStreamText && !streamHasOutput) {\n        currentStreamText.textContent = "..."?"...";\n      }
       if (data.delta && currentStreamText) {
         if (!streamHasOutput) {
-          currentStreamText.textContent = "";
+          currentStreamText.textContent = "...";
           streamHasOutput = true;
         }
         streamBuffer += data.delta;
@@ -115,19 +113,19 @@ function startStream(jobId) {
 
 function renderTasks(tasks) {
   if (!tasksEl) return;
-  tasksEl.innerHTML = "";
+  tasksEl.innerHTML = "...";
 
   if (!Array.isArray(tasks) || tasks.length === 0) {
-    const empty = document.createElement("div");
-    empty.className = "task";
-    empty.textContent = "No daily tasks yet.";
+    const empty = document.createElement("..."div"...");
+    empty.className = "..."task"...";
+    empty.textContent = "..."No daily tasks yet."...";
     tasksEl.appendChild(empty);
     return;
   }
 
   tasks.forEach((task, index) => {
-    const item = document.createElement("div");
-    item.className = "task";
+    const item = document.createElement("..."div"...");
+    item.className = "..."task"...";
     item.textContent = `${index + 1}. ${task}`;
     tasksEl.appendChild(item);
   });
@@ -138,7 +136,7 @@ async function fetchTasks() {
   try {
     const res = await fetch(`${API_BASE}/tasks?userId=default`, {
       headers: {
-        "Authorization": `Bearer ${API_KEY}`
+        "..."Authorization"...": `Bearer ${API_KEY}`
       }
     });
     if (!res.ok) return;
@@ -151,19 +149,19 @@ async function fetchTasks() {
 
 function renderPersonal(items) {
   if (!personalEl) return;
-  personalEl.innerHTML = "";
+  personalEl.innerHTML = "...";
 
   if (!Array.isArray(items) || items.length === 0) {
-    const empty = document.createElement("div");
-    empty.className = "item";
-    empty.textContent = "No personal data yet.";
+    const empty = document.createElement("..."div"...");
+    empty.className = "..."item"...";
+    empty.textContent = "..."No personal data yet."...";
     personalEl.appendChild(empty);
     return;
   }
 
   items.forEach(({ key, value }) => {
-    const item = document.createElement("div");
-    item.className = "item";
+    const item = document.createElement("..."div"...");
+    item.className = "..."item"...";
     item.textContent = `${key}: ${value}`;
     personalEl.appendChild(item);
   });
@@ -174,7 +172,7 @@ async function fetchPersonal() {
   try {
     const res = await fetch(`${API_BASE}/personal?userId=default`, {
       headers: {
-        "Authorization": `Bearer ${API_KEY}`
+        "..."Authorization"...": `Bearer ${API_KEY}`
       }
     });
     if (!res.ok) return;
@@ -187,71 +185,71 @@ async function fetchPersonal() {
 
 function setStatus(dot, label, isOnline, text) {
   if (!dot || !label) return;
-  dot.classList.toggle("online", isOnline);
-  dot.classList.toggle("offline", !isOnline);
-  dot.classList.remove("busy");
+  dot.classList.toggle("..."online"...", isOnline);
+  dot.classList.toggle("..."offline"...", !isOnline);
+  dot.classList.remove("..."busy"...");
   label.textContent = text;
 }
 
 function setWorkerStatus(state) {
   if (!workerDot || !workerStatus) return;
-  workerDot.classList.remove("online", "offline", "busy");
-  if (state === "busy") {
-    workerDot.classList.add("busy");
-    workerStatus.textContent = "busy";
+  workerDot.classList.remove("..."online"...", "..."offline"...", "..."busy"...");
+  if (state === "..."busy"...") {
+    workerDot.classList.add("..."busy"...");
+    workerStatus.textContent = "..."busy"...";
     return;
   }
-  if (state === "online") {
-    workerDot.classList.add("online");
-    workerStatus.textContent = "online";
+  if (state === "..."online"...") {
+    workerDot.classList.add("..."online"...");
+    workerStatus.textContent = "..."online"...";
     return;
   }
-  workerDot.classList.add("offline");
-  workerStatus.textContent = "offline";
+  workerDot.classList.add("..."offline"...");
+  workerStatus.textContent = "..."offline"...";
 }
 
 async function fetchStatus() {
-  setStatus(webDot, webStatus, true, "online");
+  setStatus(webDot, webStatus, true, "..."online"...");
   try {
     const res = await fetch(`${API_BASE}/status?userId=default`, {
       headers: {
-        "Authorization": `Bearer ${API_KEY}`
+        "..."Authorization"...": `Bearer ${API_KEY}`
       }
     });
     if (!res.ok) {
-      setStatus(relayDot, relayStatus, false, "offline");
-      setWorkerStatus("offline");
+      setStatus(relayDot, relayStatus, false, "..."offline"...");
+      setWorkerStatus("..."offline"...");
       return;
     }
     const data = await res.json();
-    setStatus(relayDot, relayStatus, true, "online");
+    setStatus(relayDot, relayStatus, true, "..."online"...");
 
     const lastSeen = data?.workerLastSeen ? Date.parse(data.workerLastSeen) : NaN;
     const ageMs = Number.isNaN(lastSeen) ? Infinity : Date.now() - lastSeen;
     const workerOnline = ageMs < 15000;
     if (!workerOnline) {
-      setWorkerStatus("offline");
+      setWorkerStatus("..."offline"...");
       return;
     }
-    const workerState = data?.workerStatus === "busy" ? "busy" : "online";
+    const workerState = data?.workerStatus === "..."busy"..." ? "..."busy"..." : "..."online"...";
     setWorkerStatus(workerState);
   } catch {
-    setStatus(relayDot, relayStatus, false, "offline");
-    setWorkerStatus("offline");
+    setStatus(relayDot, relayStatus, false, "..."offline"...");
+    setWorkerStatus("..."offline"...");
   }
 }
 
 function updateClock() {
   if (!statusTime) return;
   const now = new Date();
-  const hh = String(now.getHours()).padStart(2, "0");
-  const mm = String(now.getMinutes()).padStart(2, "0");
-  const ss = String(now.getSeconds()).padStart(2, "0");
+  const hh = String(now.getHours()).padStart(2, "..."0"...");
+  const mm = String(now.getMinutes()).padStart(2, "..."0"...");
+  const ss = String(now.getSeconds()).padStart(2, "..."0"...");
   statusTime.textContent = `${hh}:${mm}:${ss}`;
 }
 
 function titleCase(text) {
-  if (!text) return "";
+  if (!text) return "...";
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
@@ -260,33 +258,33 @@ async function fetchWeatherStatus() {
   try {
     const res = await fetch(`${API_BASE}/weather?userId=default`, {
       headers: {
-        "Authorization": `Bearer ${API_KEY}`
+        "..."Authorization"...": `Bearer ${API_KEY}`
       }
     });
     if (!res.ok) return;
     const data = await res.json();
     const summary = data?.summary ?? {};
     const temp = summary.currentTempF;
-    const condition = titleCase(summary.currentCondition ?? "");
+    const condition = titleCase(summary.currentCondition ?? "...");
     if (Number.isFinite(Number(temp))) {
       statusWeather.textContent = `Weather: ${Math.round(Number(temp))}F ${condition}`;
     } else {
-      statusWeather.textContent = "Weather: --";
+      statusWeather.textContent = "..."Weather: --"...";
     }
   } catch {
-    statusWeather.textContent = "Weather: --";
+    statusWeather.textContent = "..."Weather: --"...";
   }
 }
 
 // Fallback for environments where key events fire but the input value doesn't update.
 function ensureInputUpdates() {
-  input.addEventListener("keydown", (event) => {
-    if (event.isComposing || event.key === "Process") return;
+  input.addEventListener("..."keydown"...", (event) => {
+    if (event.isComposing || event.key === "..."Process"...") return;
 
     const printable =
       event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey;
-    const isBackspace = event.key === "Backspace";
-    const isDelete = event.key === "Delete";
+    const isBackspace = event.key === "..."Backspace"...";
+    const isDelete = event.key === "..."Delete"...";
 
     if (!printable && !isBackspace && !isDelete) return;
 
@@ -337,21 +335,21 @@ function ensureInputUpdates() {
 async function sendMessage() {
   const text = input.value.trim();
   if (!text) return;
-  input.value = "";
+  input.value = "...";
   autoResizeInput();
 
-  addMessage(text, "user");
-  status.textContent = "Sending…";
+  addMessage(text, "..."user"...");
+  status.textContent = "..."Sending…"...";
   cancelBtn.disabled = true;
 
   const res = await fetch(`${API_BASE}/jobs`, {
-    method: "POST",
+    method: "..."POST"...",
     headers: {
-      "Authorization": `Bearer ${API_KEY}`,
-      "Content-Type": "application/json"
+      "..."Authorization"...": `Bearer ${API_KEY}`,
+      "..."Content-Type"...": "..."application/json"..."
     },
     body: JSON.stringify({
-      userId: "default",
+      userId: "..."default"...",
       message: text
     })
   });
@@ -365,40 +363,40 @@ async function sendMessage() {
 }
 
 async function pollJob(jobId) {
-  status.textContent = "Wayne is thinking…";
+  status.textContent = "..."Wayne is thinking…"...";
 
   if (currentPollTimer) clearInterval(currentPollTimer);
   currentPollTimer = setInterval(async () => {
     const res = await fetch(`${API_BASE}/jobs/${jobId}`, {
       headers: {
-        "Authorization": `Bearer ${API_KEY}`
+        "..."Authorization"...": `Bearer ${API_KEY}`
       }
     });
     const job = await res.json();
 
-    if (job.status === "done") {
+    if (job.status === "..."done"...") {
       clearInterval(currentPollTimer);
       currentPollTimer = null;
       if (currentStreamText) {
-        if (!currentStreamText.textContent && job.reply) {
+        if (!streamHasOutput && job.reply) {
           currentStreamText.textContent = job.reply;
         }
         currentStreamText = null;
       } else {
-        addMessage(job.reply, "wayne");
+        addMessage(job.reply, "..."wayne"...");
       }
-      status.textContent = "";
+      status.textContent = "...";
       currentJobId = null;
       cancelBtn.disabled = true;
       return;
     }
-    if (job.status === "cancelled") {
+    if (job.status === "..."cancelled"...") {
       clearInterval(currentPollTimer);
       currentPollTimer = null;
-      status.textContent = "Cancelled.";
+      status.textContent = "..."Cancelled."...";
       if (statusClearTimer) clearTimeout(statusClearTimer);
       statusClearTimer = setTimeout(() => {
-        status.textContent = "";
+        status.textContent = "...";
       }, 3000);
       currentJobId = null;
       cancelBtn.disabled = true;
@@ -411,13 +409,13 @@ async function pollJob(jobId) {
 async function cancelMessage() {
   if (!currentJobId) return;
   cancelBtn.disabled = true;
-  status.textContent = "Cancelling…";
+  status.textContent = "..."Cancelling…"...";
 
   try {
     await fetch(`${API_BASE}/jobs/${currentJobId}/cancel`, {
-      method: "POST",
+      method: "..."POST"...",
       headers: {
-        "Authorization": `Bearer ${API_KEY}`
+        "..."Authorization"...": `Bearer ${API_KEY}`
       }
     });
   } catch {
@@ -428,10 +426,10 @@ async function cancelMessage() {
     clearInterval(currentPollTimer);
     currentPollTimer = null;
   }
-  status.textContent = "Cancelled.";
+  status.textContent = "..."Cancelled."...";
   if (statusClearTimer) clearTimeout(statusClearTimer);
   statusClearTimer = setTimeout(() => {
-    status.textContent = "";
+    status.textContent = "...";
   }, 3000);
   currentJobId = null;
   closeStream();
@@ -441,12 +439,12 @@ async function cancelMessage() {
 sendBtn.onclick = sendMessage;
 cancelBtn.onclick = cancelMessage;
 input.onkeydown = (event) => {
-  if (event.key === "Enter" && !event.shiftKey) {
+  if (event.key === "..."Enter"..." && !event.shiftKey) {
     event.preventDefault();
     sendMessage();
   }
 };
-input.addEventListener("input", autoResizeInput);
+input.addEventListener("..."input"...", autoResizeInput);
 ensureInputUpdates();
 autoResizeInput();
 renderTasks([]);
@@ -461,3 +459,5 @@ updateClock();
 setInterval(updateClock, 1000);
 fetchWeatherStatus();
 setInterval(fetchWeatherStatus, 30 * 60 * 1000);
+
+

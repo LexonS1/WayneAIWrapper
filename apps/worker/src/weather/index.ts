@@ -47,6 +47,22 @@ type WeatherMeta = {
   currentCondition?: string;
 };
 
+type WeatherApi = {
+  current?: {
+    temperature_2m?: number | null;
+    apparent_temperature?: number | null;
+    precipitation?: number | null;
+    weather_code?: number | null;
+  };
+  daily?: {
+    time?: string[];
+    temperature_2m_max?: number[];
+    temperature_2m_min?: number[];
+    weather_code?: number[];
+    precipitation_sum?: number[];
+  };
+};
+
 async function readMeta(): Promise<WeatherMeta> {
   try {
     const raw = await fs.readFile(paths.WEATHER_META, "utf8");
@@ -60,7 +76,7 @@ async function writeMeta(meta: WeatherMeta) {
   await fs.writeFile(paths.WEATHER_META, JSON.stringify(meta), "utf8");
 }
 
-async function fetchWeather() {
+async function fetchWeather(): Promise<WeatherApi> {
   const url =
     "https://api.open-meteo.com/v1/forecast" +
     `?latitude=${LAT}&longitude=${LON}` +
@@ -71,7 +87,7 @@ async function fetchWeather() {
 
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Weather fetch error ${res.status}: ${await res.text()}`);
-  return await res.json();
+  return (await res.json()) as WeatherApi;
 }
 
 function roundMaybe(value: any) {
@@ -81,7 +97,7 @@ function roundMaybe(value: any) {
   return Math.round(num);
 }
 
-function buildDayMd(data: any) {
+function buildDayMd(data: WeatherApi) {
   const current = data?.current ?? {};
   const daily = data?.daily ?? {};
   const todayHi = Array.isArray(daily.temperature_2m_max) ? daily.temperature_2m_max[0] : null;
@@ -99,7 +115,7 @@ function buildDayMd(data: any) {
   return parts.join("\n");
 }
 
-function buildWeekMd(data: any) {
+function buildWeekMd(data: WeatherApi) {
   const daily = data?.daily ?? {};
   const times: string[] = daily.time ?? [];
   const highs: number[] = daily.temperature_2m_max ?? [];
@@ -135,14 +151,14 @@ export async function refreshWeather(force = false) {
   const current = data?.current ?? {};
   const summary: WeatherMeta = {
     updatedAt: now,
-    currentTempF: Number.isFinite(Number(current.temperature_2m))
-      ? Math.round(Number(current.temperature_2m))
-      : undefined,
-    currentFeelsF: Number.isFinite(Number(current.apparent_temperature))
-      ? Math.round(Number(current.apparent_temperature))
-      : undefined,
     currentCondition: weatherCodeToText(Number(current.weather_code ?? -1))
   };
+  if (Number.isFinite(Number(current.temperature_2m))) {
+    summary.currentTempF = Math.round(Number(current.temperature_2m));
+  }
+  if (Number.isFinite(Number(current.apparent_temperature))) {
+    summary.currentFeelsF = Math.round(Number(current.apparent_temperature));
+  }
   const dayMd = buildDayMd(data);
   const weekMd = buildWeekMd(data);
 
