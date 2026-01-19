@@ -17,5 +17,13 @@ export function maybeHandleTimeQuery(userText: string): string | null {
 
   if (!isTimeQuery && !isDateQuery) return null;
 
-  return `Current time: ${getNowStamp()}`;
+  const now = getNowStamp();
+  if (isDateQuery && !isTimeQuery) {
+    const dateOnly = now.split(" ")[0] ?? now;
+    return `Current date: ${dateOnly}`;
+  }
+  const timeOnly = now.split(" ")[1] ?? now;
+  const parts = timeOnly.split(":");
+  const hhmm = parts.length >= 2 ? `${parts[0]}:${parts[1]}` : timeOnly;
+  return `Current time: ${hhmm}`;
 }

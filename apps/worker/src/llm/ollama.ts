@@ -15,7 +15,7 @@ export async function ollamaGenerate(prompt: string) {
       prompt,
       stream: false,
       options: {
-        num_predict: 200,
+        num_predict: 300,
         temperature: 0.4,
         top_p: 0.9
       }
@@ -39,7 +39,7 @@ export async function ollamaGenerateStream(
       prompt,
       stream: true,
       options: {
-        num_predict: 160,
+        num_predict: 300,
         temperature: 0.4,
         top_p: 0.9
       }

@@ -9,6 +9,125 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div id="bg-scene">
+    <div class="rain-layer"></div>
+    <svg viewBox="0 0 1000 700" aria-hidden="true">
+      <defs>
+        <linearGradient id="bat-glow" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#3a4bff" stop-opacity="0.2"/>
+          <stop offset="100%" stop-color="#21d4ff" stop-opacity="0.6"/>
+        </linearGradient>
+        <linearGradient id="waterfall" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#1bd3ff" stop-opacity="0.0"/>
+          <stop offset="50%" stop-color="#1bd3ff" stop-opacity="0.4"/>
+          <stop offset="100%" stop-color="#1bd3ff" stop-opacity="0.0"/>
+        </linearGradient>
+        <filter id="bg-blur">
+          <feGaussianBlur stdDeviation="6"/>
+        </filter>
+        <filter id="signal-noise">
+          <feTurbulence type="fractalNoise" baseFrequency="0.2" numOctaves="2" seed="3" result="noise"/>
+          <feDisplacementMap in="SourceGraphic" in2="noise" scale="25" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+      </defs>
+
+      <path class="bat-path bat-path--one" d="M 120 120 Q 180 90 240 120 Q 290 70 340 120 Q 410 110 470 150 Q 520 110 570 120 Q 620 70 700 120 Q 770 100 830 140"
+            fill="none" stroke="url(#bat-glow)" stroke-width="3" stroke-linecap="round"/>
+      <path class="bat-path bat-path--two" d="M 80 280 Q 150 240 220 280 Q 260 230 310 270 Q 370 250 440 300 Q 500 250 580 290 Q 640 240 720 300 Q 780 270 860 320"
+            fill="none" stroke="url(#bat-glow)" stroke-width="2.5" stroke-linecap="round"/>
+
+      <g class="waterfall-group">
+        <path class="waterfall-path" d="M 720 -80 Q 700 80 730 220 Q 760 340 720 520 Q 690 640 720 800"
+              fill="none" stroke="url(#waterfall)" stroke-width="3" stroke-linecap="round"/>
+        <path class="waterfall-path waterfall-path--thin" d="M 745 -60 Q 730 120 760 260 Q 785 360 750 540 Q 720 660 750 820"
+              fill="none" stroke="url(#waterfall)" stroke-width="7.5" stroke-linecap="round"/>
+        <path class="waterfall-path waterfall-path--mist" d="M 700 -40 Q 690 120 715 260 Q 740 360 710 520 Q 680 640 705 820"
+              fill="none" stroke="url(#waterfall)" stroke-width="10" stroke-linecap="round"/>
+        <g transform="translate(60, 0)">
+          <path class="waterfall-path" d="M 720 -80 Q 700 80 730 220 Q 760 340 720 520 Q 690 640 720 800"
+                fill="none" stroke="url(#waterfall)" stroke-width="4" stroke-linecap="round"/>
+          <path class="waterfall-path waterfall-path--thin" d="M 745 -60 Q 730 120 760 260 Q 785 360 750 540 Q 720 660 750 820"
+                fill="none" stroke="url(#waterfall)" stroke-width="7" stroke-linecap="round"/>
+          <path class="waterfall-path waterfall-path--mist" d="M 700 -40 Q 690 120 715 260 Q 740 360 710 520 Q 680 640 705 820"
+                fill="none" stroke="url(#waterfall)" stroke-width="8" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(130, 0)">
+          <path class="waterfall-path" d="M 720 -80 Q 700 80 730 220 Q 760 340 720 520 Q 690 640 720 800"
+                fill="none" stroke="url(#waterfall)" stroke-width="8" stroke-linecap="round"/>
+          <path class="waterfall-path waterfall-path--thin" d="M 745 -60 Q 730 120 760 260 Q 785 360 750 540 Q 720 660 750 820"
+                fill="none" stroke="url(#waterfall)" stroke-width="8" stroke-linecap="round"/>
+          <path class="waterfall-path waterfall-path--mist" d="M 700 -40 Q 690 120 715 260 Q 740 360 710 520 Q 680 640 705 820"
+                fill="none" stroke="url(#waterfall)" stroke-width="7" stroke-linecap="round"/>
+        </g>
+      </g>
+
+      <g class="bat-swarm">
+        <path class="bat" d="M 0 0 C 10 -8 24 -6 32 0 C 26 2 20 8 16 14 C 12 8 6 2 0 0 Z"/>
+        <path class="bat" d="M 0 0 C 12 -10 26 -8 34 0 C 27 1 22 10 17 16 C 13 10 6 1 0 0 Z"/>
+        <path class="bat" d="M 0 0 C 9 -6 22 -6 30 0 C 24 1 20 7 15 12 C 11 7 5 1 0 0 Z"/>
+      </g>
+      <path id="bat-flight-path" d="M -120 520 Q 140 460 320 520 Q 520 620 740 500 Q 940 380 1160 420" fill="none"/>
+      <path id="bat-flight-path-2" d="M 1040 160 Q 820 220 620 140 Q 420 80 220 180 Q 40 260 -140 200" fill="none"/>
+      <path id="bat-flight-path-3" d="M -80 120 Q 140 200 320 140 Q 520 80 720 160 Q 900 260 1120 220" fill="none"/>
+      <g class="bat-flyer">
+        <path d="M 0 0 C 14 -10 30 -8 40 0 C 32 2 26 12 20 18 C 14 12 6 2 0 0 Z"/>
+        <animateMotion dur="12s" repeatCount="indefinite" rotate="auto">
+          <mpath href="#bat-flight-path"/>
+        </animateMotion>
+      </g>
+      <g class="bat-pack">
+        <g class="bat-unit">
+          <path class="bat" d="M 0 0 C 10 -8 24 -6 32 0 C 26 2 20 8 16 14 C 12 8 6 2 0 0 Z"/>
+          <animateMotion dur="16s" repeatCount="indefinite" rotate="auto">
+            <mpath href="#bat-flight-path"/>
+          </animateMotion>
+        </g>
+        <g class="bat-unit">
+          <path class="bat" d="M 0 0 C 12 -10 26 -8 34 0 C 27 1 22 10 17 16 C 13 10 6 1 0 0 Z"/>
+          <animateMotion dur="14s" repeatCount="indefinite" rotate="auto">
+            <mpath href="#bat-flight-path-2"/>
+          </animateMotion>
+        </g>
+        <g class="bat-unit">
+          <path class="bat" d="M 0 0 C 9 -6 22 -6 30 0 C 24 1 20 7 15 12 C 11 7 5 1 0 0 Z"/>
+          <animateMotion dur="18s" repeatCount="indefinite" rotate="auto">
+            <mpath href="#bat-flight-path-3"/>
+          </animateMotion>
+        </g>
+        <g class="bat-unit">
+          <path class="bat" d="M 0 0 C 10 -8 24 -6 32 0 C 26 2 20 8 16 14 C 12 8 6 2 0 0 Z"/>
+          <animateMotion dur="13s" repeatCount="indefinite" rotate="auto">
+            <mpath href="#bat-flight-path-2"/>
+          </animateMotion>
+        </g>
+        <g class="bat-unit">
+          <path class="bat" d="M 0 0 C 12 -10 26 -8 34 0 C 27 1 22 10 17 16 C 13 10 6 1 0 0 Z"/>
+          <animateMotion dur="17s" repeatCount="indefinite" rotate="auto">
+            <mpath href="#bat-flight-path"/>
+          </animateMotion>
+        </g>
+        <g class="bat-unit">
+          <path class="bat" d="M 0 0 C 9 -6 22 -6 30 0 C 24 1 20 7 15 12 C 11 7 5 1 0 0 Z"/>
+          <animateMotion dur="15s" repeatCount="indefinite" rotate="auto">
+            <mpath href="#bat-flight-path-3"/>
+          </animateMotion>
+        </g>
+      </g>
+
+      <g class="bat-pulses">
+        <circle class="pulse-ring" cx="50" cy="110" r="6" fill="none" stroke="#1bd3ff" stroke-width="1" opacity="0.3" filter="url(#signal-noise)"/>
+        <circle class="pulse-ring" cx="520" cy="550" r="6" fill="none" stroke="#1bd3ff" stroke-width="1" opacity="0.25" filter="url(#signal-noise)"/>
+        <circle class="pulse-ring" cx="1000" cy="230" r="6" fill="none" stroke="#1bd3ff" stroke-width="1" opacity="0.2" filter="url(#signal-noise)"/>
+      </g>
+
+      <g class="bat-emblem" transform="translate(10 20) scale(1.6)">
+        <g class="bat-emblem-pulse">
+          <path d="M -90 0 C -70 -30 -40 -40 -10 -22 C -2 -40 10 -46 20 -40 C 30 -46 42 -40 50 -22 C 80 -40 110 -30 130 0 C 105 5 80 16 60 34 C 42 20 30 10 20 0 C 10 10 -2 20 -20 34 C -40 16 -65 5 -90 0 Z"
+                fill="rgba(120, 80, 50, 0.6)" stroke="rgba(120, 80, 50, 0.85)" stroke-width="3"/>
+        </g>
+      </g>
+    </svg>
+  </div>
   <div id="app">
     <h1>Wayne</h1>
 

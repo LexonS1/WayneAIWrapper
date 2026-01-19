@@ -35,20 +35,12 @@ export async function classifyIntent(
       : [];
 
   const prompt = [
-    "You are a classifier. Return ONLY JSON.",
+    "Return JSON only.",
     "Intents: weather.current, tasks.list, tasks.add, personal.get, personal.set, personal.age, none.",
-    "If tasks.add, include args.text with the task.",
-    "If tasks.list, args can be empty.",
-    "If weather-related (temperature, hot/cold, forecast), use weather.current.",
-    "If user asks to add something to their list or stuff to do, use tasks.add.",
-    "If user asks what they need to do or their list, use tasks.list.",
-    "If user asks about personal data (weight, height, name, birthday), use personal.get with args.key.",
-    "If user asks to update personal data, use personal.set with args.key and args.value.",
-    "If user asks about age or how old they are, use personal.age.",
+    "tasks.add -> args.text. personal.get -> args.key. personal.set -> args.key, args.value.",
     personalKeys.length
-      ? `Available personal keys: ${personalKeys.join(", ")}`
-      : "Available personal keys: (none)",
-    "",
+      ? `Personal keys: ${personalKeys.join(", ")}`
+      : "Personal keys: (none)",
     `User: ${userText}`,
     "JSON:"
   ].join("\n");
